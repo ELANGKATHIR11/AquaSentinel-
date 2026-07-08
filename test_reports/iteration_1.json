@@ -1,0 +1,40 @@
+{
+  "summary": "First full test run of AquaSentinel. Backend: 23/23 pytest cases pass (auth, health, sensors, ingestion incl. wrong device key 401, idempotent duplicate, out-of-range QC flags, telemetry query, CSV+GeoJSON exports, alerts + viewer RBAC 403, device commands with auto-ack, simulation status/stop/start with node_count body, audit RBAC, admin users create + PATCH /users/{id}/role, viewer create 403). Frontend: login OK -> /overview with all KPIs, LIVE indicator green, event stream ticking (telemetry.created/prediction.created). Sensors page shows 12 rows, sensor detail loads with charts. TelemetryExplorer, Alerts (ack->resolve buttons), DeviceCommands, ML Ops (metrics), Simulation buttons, Audit, Admin (all inputs present) all work as super_admin. Viewer RBAC verified end-to-end: sidebar hides admin+audit; ack/resolve buttons hidden on alerts; sim start/stop buttons hidden. ONE CRITICAL FRONTEND BUG: /live-map throws uncaught runtime error 'Map container is already initialized' (Leaflet double-init under React StrictMode) — the entire LiveMap page fails to render.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "LiveMap (/live-map)", "issue": "Uncaught runtime error: 'Map container is already initialized' — Leaflet's L.map() is being called twice on the same DOM node (React 18 StrictMode double-mount / effect re-run without cleanup). Result: the whole page is blank with a red error overlay; no leaflet-container is rendered. Fix: in the useEffect that creates the map, keep a ref to the map instance and call map.remove() in the cleanup function, or use react-leaflet's <MapContainer>. Also check that the map DOM node is only initialized when instance ref is null.", "selector": ".leaflet-container / LiveMap.jsx", "priority": "CRITICAL"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Admin / role select dropdown", "issues": ["React hydration warning: '<span> cannot be a child of <option>' — remove the <span> inside the native <option> in the role select (or switch to a custom shadcn Select)."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_aquasentinel_backend.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Fix LiveMap Leaflet double-initialization: guard L.map() with an instance ref and add map.remove() in the useEffect cleanup (StrictMode-safe).",
+    "Remove <span> child inside <option> in AdminUsers role select to clear hydration warning."
+  ],
+  "critical_code_review_comments": [
+    "LiveMap.jsx: Leaflet map init is not idempotent — under React 18 StrictMode the effect fires twice and L.map(container) throws 'already initialized'. Must guard with instanceRef.current and add cleanup map.remove().",
+    "AdminUsers role select: uses non-HTML-valid <span> inside <option>, triggers React hydration warning.",
+    "routes_ops.py PATCH /users/{user_id}/role — correct; ensure frontend AdminUsers uses this exact path (verified working in test).",
+    "Simulator command auto-ack loop runs on the same 5s interval as telemetry; works, but consider a shorter cadence for command responsiveness."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_aquasentinel_backend.py (new)"
+  ],
+  "success_rate": {"backend": "100%", "frontend": "90% (LiveMap page broken)"},
+  "test_credentials": "admin@aquasentinel.io/Admin@1234 (super_admin), ops@aquasentinel.io/Ops@12345 (ops_manager), viewer@aquasentinel.io/Viewer@123. Device key: aqs-device-key-7f3a91 (from /app/memory/test_credentials.md).",
+  "seed_data_creation": "test_create_and_role_change creates a TEST_<hex>@aquasentinel.io analyst user; not cleaned up (idempotent per run).",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend tests pass with `pytest /app/backend/tests/test_aquasentinel_backend.py -n 0`. pytest.ini forces -n 2 --dist loadscope; certain tests (sim stop/start + device command auto-ack) can race across workers because they share the singleton simulator — pass `-n 0` for reliable runs. Simulator is running (SIM-6AB5CA0C, 12 nodes, 5s tick) at the end of this iteration.",
+  "rca of the issue": "LiveMap: React 18 dev StrictMode invokes effects twice. The Leaflet init effect creates a new L.Map on the same container div both times without disposing the first instance, so the second call throws 'Map container is already initialized.' Reproduction: log in as admin, click Live Map nav. Mitigation: in LiveMap.jsx, keep a useRef for the map instance; only call L.map(node) when ref.current is null; in the effect cleanup, call ref.current.remove() and reset ref.current = null. Alternatively migrate to react-leaflet <MapContainer> which handles this internally."
+}
