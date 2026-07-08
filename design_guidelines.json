@@ -1,0 +1,127 @@
+{
+  "project_name": "AquaSentinel",
+  "theme": "dark",
+  "archetype": "Archetype 2: The Performance Pro (Tactical Command Center variant)",
+  "design_philosophy": "A high-end, enterprise-grade River Intelligence Platform. Follows the 'Tactical Minimalism' and 'Control Room' principles. The UI must feel like a precision instrument for disaster management and IoT fleet operations. Relies on data density, pure visibility, and stark contrast rather than decorative elements.",
+  "typography": {
+    "headings": {
+      "family": "Chivo",
+      "weight": "font-bold to font-black",
+      "tracking": "tracking-tight",
+      "usage": "Used for page titles, widget titles, and major KPI numbers. Avoid Inter for headings."
+    },
+    "body": {
+      "family": "IBM Plex Sans",
+      "weight": "font-normal",
+      "usage": "Used for standard text, descriptions, and UI controls."
+    },
+    "data_mono": {
+      "family": "JetBrains Mono",
+      "weight": "font-medium",
+      "tracking": "tracking-tight",
+      "usage": "CRITICAL for all telemetry data, ML operation metrics, log entries, and sensor coordinates."
+    },
+    "scale": {
+      "h1": "text-3xl md:text-4xl",
+      "h2": "text-xl md:text-2xl",
+      "widget_title": "text-sm uppercase tracking-[0.2em] text-slate-400",
+      "kpi_value": "text-4xl sm:text-5xl font-black tracking-tighter"
+    }
+  },
+  "colors": {
+    "rules": "Avoid purple and teal completely. Use Deep Obsidian/Slate as the primary anchor with Electric Blue and Warning Amber for triggers.",
+    "background": {
+      "main": "bg-slate-950",
+      "sidebar": "bg-slate-900",
+      "widget": "bg-slate-900/50"
+    },
+    "surfaces": {
+      "default": "bg-slate-900 border border-slate-800",
+      "hover": "hover:bg-slate-800 hover:border-slate-700",
+      "glass": "backdrop-blur-xl bg-slate-900/70 border-slate-700/50"
+    },
+    "text": {
+      "primary": "text-slate-50",
+      "secondary": "text-slate-400",
+      "muted": "text-slate-500"
+    },
+    "accents": {
+      "primary_action": "bg-blue-600 text-white hover:bg-blue-500",
+      "primary_text": "text-blue-500"
+    },
+    "status": {
+      "critical_flood": "text-red-500 bg-red-500/10 border-red-500/20",
+      "warning_anomaly": "text-amber-500 bg-amber-500/10 border-amber-500/20",
+      "healthy_online": "text-emerald-500 bg-emerald-500/10 border-emerald-500/20",
+      "offline_drift": "text-slate-400 bg-slate-800 border-slate-700"
+    }
+  },
+  "layout_and_grids": {
+    "navigation": "Collapsible Left-Side Navigation. Horizontal top-bars are insufficient for 13+ modules. Sidebar must be dense, scalable, and foldable to maximize GIS map real estate.",
+    "page_structure": "Modified F-pattern. Top-left always contains the 'North Star Metric' (e.g., Global Fleet Health or Active Flood Risks).",
+    "grid_system": {
+      "name": "The Control Room Grid",
+      "strategy": "High density, gap-4 or gap-6. grid-cols-1 md:grid-cols-4 xl:grid-cols-6 or 12. Every pixel utilized.",
+      "widgets": "Flat solid surfaces. 1px subtle border (border-slate-800). Max 8px border-radius (rounded-md or rounded-lg). NO heavy drop shadows. Use 1px inner glow highlights or stroke."
+    }
+  },
+  "surface_strategies": {
+    "dashboard_cards": "Grid Borders / Technical Look. Widgets use flat backgrounds with crisp 1px borders. Subgrid alignment where necessary.",
+    "live_map_overlay": "Glassmorphism (Crystal variant) exclusively for floating panels over the GIS map (backdrop-blur-xl bg-slate-950/60 border-slate-800).",
+    "interactive_elements": "Neumorphism is BANNED. Use flat design with sharp contrast changes on hover."
+  },
+  "components_and_libraries": {
+    "framework": "React.js with Tailwind CSS (.js/.jsx files only).",
+    "ui_library": "Shadcn UI (Customized heavily for dark mode, borders, and spacing). Go cardless where possible, using section borders instead.",
+    "icons": "lucide-react (Standard) or @phosphor-icons/react (for denser technical UI).",
+    "charts": "recharts. Use Line, Bar, and Donut. Must use custom tooltips that match the dark theme.",
+    "maps": "react-map-gl for the /live-map module. Requires dark map style.",
+    "tables": "Dense, exact typography. Left-aligned data. JetBrains Mono for numerical columns (MAC addresses, telemetry data, lat/long)."
+  },
+  "media_assets": {
+    "instructions": "Main agent must use these exact URLs. Do NOT use placeholders.",
+    "images": [
+      {
+        "category": "gis_map_texture_1",
+        "url": "https://images.unsplash.com/photo-1572293071277-ef1b3e761045?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTZ8MHwxfHNlYXJjaHwxfHxyaXZlciUyMGFlcmlhbCUyMHZpZXclMjBtYXAlMjB0ZXh0dXJlfGVufDB8fHx8MTc4MzQ5ODY4M3ww&ixlib=rb-4.1.0&q=85",
+        "description": "Winding river aerial view (use as visual texture or placeholder for map backgrounds)"
+      },
+      {
+        "category": "gis_map_texture_2",
+        "url": "https://images.unsplash.com/photo-1674334083779-5e38f317ecc7?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTZ8MHwxfHNlYXJjaHwyfHxyaXZlciUyMGFlcmlhbCUyMHZpZXclMjBtYXAlMjB0ZXh0dXJlfGVufDB8fHx8MTc4MzQ5ODY4M3ww&ixlib=rb-4.1.0&q=85",
+        "description": "Lush river countryside aerial view"
+      },
+      {
+        "category": "sensor_hardware_1",
+        "url": "https://images.unsplash.com/photo-1638734255280-8bae834f8297?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzN8MHwxfHNlYXJjaHwzfHxpbmR1c3RyaWFsJTIwd2F0ZXIlMjBzZW5zb3IlMjBpb3R8ZW58MHx8fHwxNzgzNDk4NjgzfDA&ixlib=rb-4.1.0&q=85",
+        "description": "Industrial IoT sensor equipment closeup (use in /sensor/:id digital twin detail)"
+      },
+      {
+        "category": "avatar_admin",
+        "url": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzV8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdCUyMGF2YXRhcnxlbnwwfHx8fDE3ODM0MjIyMzJ8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Admin user profile picture"
+      },
+      {
+        "category": "avatar_operator",
+        "url": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzV8MHwxfHNlYXJjaHwyfHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdCUyMGF2YXRhcnxlbnwwfHx8fDE3ODM0MjIyMzJ8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Operator user profile picture"
+      }
+    ]
+  },
+  "testing_and_accessibility": {
+    "data_testid_rule": "CRITICAL: All interactive and key informational elements MUST include a data-testid attribute.",
+    "naming_convention": "kebab-case, role-based. Example: data-testid='sensor-fleet-table', data-testid='sidebar-nav-alerts'.",
+    "contrast": "Text must meet minimum 4.5:1 contrast. Use Text Shadow over GIS maps. Explicitly set hover text colors (e.g. hover:text-white)."
+  },
+  "instructions_to_main_agent": [
+    "Build the dashboard exclusively using .js/.jsx files.",
+    "Implement the Collapsible Left Sidebar for the 13 navigation routes.",
+    "Use 'The Control Room' grid configuration for all dashboard views. Utilize space efficiently.",
+    "In /overview, ensure KPIs use the fluid text scale and JetBrains Mono for numbers.",
+    "In /live-map, use floating glassmorphic panels over a dark-themed map component.",
+    "In /sensor/:id (Digital Twin), utilize the sensor_hardware image and rich telemetry charts.",
+    "Implement WebSocket mock states by showing a 'Live' pulsing indicator (Emerald green) in the top header.",
+    "Avoid Shadcn 'Card' wrappers if they add too much padding; use custom raw HTML/Tailwind to create denser grids.",
+    "Never use pure black (#000000) or teal (#1B93A4)."
+  ]
+}
