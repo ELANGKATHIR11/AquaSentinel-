@@ -15,7 +15,7 @@ graph TD
         Hydro[HydroRIVERS Asia] -->|Centerline Data| PP
     end
 
-    subgraph Python Pipeline (dgpu-core)
+    subgraph "Python Pipeline (dgpu-core)"
         PP -->|03_prepare_boundaries.py| Bounds[Tamil Nadu State & District Boundaries]
         PP -->|04_extract_rivers.py| Extract[River Centerlines & Surfaces Extraction]
         PP -->|05_compute_metrics.py| Metrics[Geospatial Metrics Calculator (UTM 44N)]
