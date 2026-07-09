@@ -18,7 +18,7 @@ graph TD
     subgraph "Python Pipeline (dgpu-core)"
         PP -->|03_prepare_boundaries.py| Bounds[Tamil Nadu State & District Boundaries]
         PP -->|04_extract_rivers.py| Extract[River Centerlines & Surfaces Extraction]
-        PP -->|05_compute_metrics.py| Metrics[Geospatial Metrics Calculator (UTM 44N)]
+        PP -->|05_compute_metrics.py| Metrics["Geospatial Metrics Calculator (UTM 44N)"]
         PP -->|06_validate_export.py| Validate[QA/QC Validations]
     end
 
