@@ -76,6 +76,26 @@ export const MapProvider: React.FC<MapProviderProps> = ({
 }) => {
   const { theme } = useDashboardStore();
   const [mapInstance, setMapInstance] = useState<L.Map | null>(null);
+  const [centerlinesGeoJson, setCenterlinesGeoJson] = useState<any>(null);
+  const [surfacesGeoJson, setSurfacesGeoJson] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/data/processed/tamil_nadu_top10_rivers.geojson')
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to load centerlines');
+        return res.json();
+      })
+      .then(data => setCenterlinesGeoJson(data))
+      .catch(err => console.warn(err));
+
+    fetch('/data/processed/tamil_nadu_top10_river_surfaces.geojson')
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to load surfaces');
+        return res.json();
+      })
+      .then(data => setSurfacesGeoJson(data))
+      .catch(err => console.warn(err));
+  }, []);
 
   // Geolocation tracking states
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
@@ -255,6 +275,53 @@ export const MapProvider: React.FC<MapProviderProps> = ({
             url={MOCK_RASTER_FLOOD_URL}
             bounds={FEB_2020_RASTER_BOUNDS}
             opacity={0.65}
+          />
+        )}
+
+        {/* Real river vector overlays (Feature Class / GeoJSON) */}
+        {alertZonesLayer && surfacesGeoJson && (
+          <GeoJSON 
+            data={surfacesGeoJson}
+            style={{
+              color: '#c084fc',
+              weight: 1.5,
+              fillColor: '#c084fc',
+              fillOpacity: 0.35
+            }}
+            onEachFeature={(feature, layer) => {
+              const props = feature.properties || {};
+              layer.bindTooltip(`
+                <div class="font-mono text-[10px] text-zinc-300 bg-zinc-950 p-2 border border-zinc-800 rounded shadow-md">
+                  <p class="font-bold text-white uppercase">${props.river_name || 'River Surface'}</p>
+                  <p>Surface Area: <b>${props.river_surface_area_km2 || 'N/A'} km²</b></p>
+                  <p>Perimeter: <b>${props.river_surface_perimeter_km || 'N/A'} km</b></p>
+                  <p class="text-[8px] text-zinc-500 mt-1 uppercase">Source: OSM Water Surface</p>
+                </div>
+              `, { sticky: true });
+            }}
+          />
+        )}
+
+        {alertZonesLayer && centerlinesGeoJson && (
+          <GeoJSON 
+            data={centerlinesGeoJson}
+            style={{
+              color: '#0ea5e9',
+              weight: 3.5,
+              opacity: 0.85
+            }}
+            onEachFeature={(feature, layer) => {
+              const props = feature.properties || {};
+              layer.bindTooltip(`
+                <div class="font-mono text-[10px] text-zinc-300 bg-zinc-950 p-2 border border-zinc-800 rounded shadow-md max-w-[240px]">
+                  <p class="font-bold text-white uppercase">${props.river_name || 'River Centerline'}</p>
+                  <p>Length/Perim: <b>${props.line_perimeter_km || props.length_km || 'N/A'} km</b></p>
+                  <p>Basin Area: <b>${props.basin_area_km2 || 'N/A'} km²</b></p>
+                  <p class="text-[8px] text-zinc-400 mt-1 leading-relaxed">Districts: ${props.districts_intersected || 'None'}</p>
+                  <p class="text-[8px] text-zinc-500 mt-1 uppercase">Source: HydroRIVERS & OSM</p>
+                </div>
+              `, { sticky: true });
+            }}
           />
         )}
 
