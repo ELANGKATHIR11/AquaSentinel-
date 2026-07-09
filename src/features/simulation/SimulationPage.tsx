@@ -384,15 +384,17 @@ export const SimulationPage: React.FC = () => {
             <div className="h-64 relative flex items-center justify-center overflow-hidden">
               <div 
                 className="relative flex flex-col items-center transition-all duration-500"
-                style={{
-                  transform: 'rotateX(55deg) rotateZ(-25deg) translateY(-20px)',
-                  transformStyle: 'preserve-3d'
+                ref={(el) => {
+                  if (el) {
+                    el.style.transform = 'rotateX(55deg) rotateZ(-25deg) translateY(-20px)';
+                    el.style.transformStyle = 'preserve-3d';
+                  }
                 }}
               >
                 {/* 1. Shapefile Layer */}
                 {activeLayers.shapefile && (
                   <div className="w-80 h-28 bg-emerald-500/10 border border-emerald-500/30 rounded-lg shadow-xl p-3 flex flex-col justify-between transition-all duration-300 transform hover:translate-y-[-10px] backdrop-blur-sm"
-                       style={{ transform: 'translateZ(60px)' }}>
+                       ref={(el) => { if (el) el.style.transform = 'translateZ(60px)'; }}>
                     <div className="flex justify-between items-start">
                       <span className="text-[10px] font-bold text-emerald-400">SHAPEFILE LAYER (SOIL & BOUNDARIES)</span>
                       <span className="text-[8px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1 rounded">VECTOR</span>
@@ -406,7 +408,7 @@ export const SimulationPage: React.FC = () => {
                 {/* 2. Feature Class Layer */}
                 {activeLayers.vector && (
                   <div className="w-80 h-28 bg-blue-500/10 border border-blue-500/30 rounded-lg shadow-xl p-3 flex flex-col justify-between transition-all duration-300 mt-[-50px] backdrop-blur-sm"
-                       style={{ transform: 'translateZ(30px)' }}>
+                       ref={(el) => { if (el) el.style.transform = 'translateZ(30px)'; }}>
                     <div className="flex justify-between items-start">
                       <span className="text-[10px] font-bold text-blue-400">FEATURE CLASS (RIVER CENTERLINES)</span>
                       <span className="text-[8px] bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1 rounded">VECTOR</span>
@@ -420,7 +422,7 @@ export const SimulationPage: React.FC = () => {
                 {/* 3. DEM Raster Layer */}
                 {activeLayers.dem && (
                   <div className="w-80 h-28 bg-purple-500/10 border border-purple-500/30 rounded-lg shadow-xl p-3 flex flex-col justify-between transition-all duration-300 mt-[-50px] backdrop-blur-sm"
-                       style={{ transform: 'translateZ(0px)' }}>
+                       ref={(el) => { if (el) el.style.transform = 'translateZ(0px)'; }}>
                     <div className="flex justify-between items-start">
                       <span className="text-[10px] font-bold text-purple-400">RASTER DEM (ELEVATION GRID)</span>
                       <span className="text-[8px] bg-purple-500/20 text-purple-300 border border-purple-500/30 px-1 rounded">RASTER</span>
