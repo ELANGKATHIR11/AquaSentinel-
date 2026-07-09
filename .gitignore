@@ -1,0 +1,13 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+data/raw/
+data/interim/
+assets/*.zip
+assets/wb_tn_shp/
+assets/maps-master/

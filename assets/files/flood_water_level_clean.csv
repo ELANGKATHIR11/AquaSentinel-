@@ -1,0 +1,41 @@
+SlNo,Date,DeviceName,WaterLevel_cm,Year,Month,Day,DeviceName_encoded
+1,2021-01-01,Z 12 Nandambakkam Canal behind DLF LNT Office,0.0,2021,1,1,19
+2,2021-01-01,Z 12 Mount Subway,20.304,2021,1,1,17
+3,2021-01-01,Z 07 Korattur North Canal Lake,209.831,2021,1,1,10
+4,2021-01-01,Z 01 Manickam Nagar Subway,374.0,2021,1,1,3
+5,2021-01-01,Z 12 Nandambakkam Canal MIOT Junction of River,834.65,2021,1,1,18
+6,2021-01-01,Z 06 Stephenson Bridge Otteri Nullah Canal,21.955,2021,1,1,9
+7,2021-01-01,Z 13 Maraimalai Adigalar Bridge,816.722,2021,1,1,26
+8,2021-01-01,Z 10 Madley Subway,488.785,2021,1,1,14
+9,2021-01-01,Z 13 Jones Road Subway,294.348,2021,1,1,25
+10,2021-01-01,Z 07 Padi kuppam Canal,473.729,2021,1,1,11
+11,2021-01-01,Z 13 B Canal Near Mylapore Railways,874.017,2021,1,1,24
+12,2021-01-01,Z 06 Ganesapuram subway,681.602,2021,1,1,7
+13,2021-01-01,Z 10 Duraisamy Subway,263.872,2021,1,1,12
+14,2021-01-01,Z 12 Thillai Ganga Nagar Subway,623.487,2021,1,1,21
+15,2021-01-01,Z 06 Stanley Nagar Jn of Otteri Nullah,315.07,2021,1,1,8
+16,2021-01-01,Z 10 MGR Canal,274.78,2021,1,1,13
+17,2021-01-01,Z 12 Nandambakkam canal Valluvar Salai Junc,0.0,2021,1,1,20
+18,2021-01-01,Z 05 Gengu Reddy Subway,335.61,2021,1,1,4
+19,2021-01-01,Z 13 Aranganathan Subway,468.982,2021,1,1,23
+20,2021-01-01,Z 01 Kargil Nagar,18.786,2021,1,1,1
+21,2021-01-01,Z 13 Thiruvika Bridge Adyar,322.994,2021,1,1,27
+22,2021-01-01,Z 05 RBI Subway Sump,88.217,2021,1,1,6
+23,2021-01-01,Z 14 Narayanapuram Lake,229.787,2021,1,1,28
+24,2021-01-01,Z 13 Adyar Kottur Puram Canal,67.044,2021,1,1,22
+25,2021-01-01,Z 01 B Canal Near Kargil Nagar,64.549,2021,1,1,0
+26,2021-01-01,Z 01 Kosasthalayar B Canal,7.254,2021,1,1,2
+27,2021-01-01,Z 14 Veerangal Odai Near Puzhuthivakkam MRTS,242.281,2021,1,1,29
+28,2021-01-01,Z 05 RBI Subway  Well,694.087,2021,1,1,5
+29,2021-01-01,Z 12 Manapakkam Canal Thirvalluvar Nagar,0.0,2021,1,1,16
+30,2021-01-01,Z 11 Kaliyamman Kovil St Virugambakkam Canal,187.745,2021,1,1,15
+31,2021-01-02,Z 12 Nandambakkam Canal behind DLF LNT Office,0.0,2021,1,2,19
+32,2021-01-02,Z 12 Mount Subway,42.511,2021,1,2,17
+33,2021-01-02,Z 07 Korattur North Canal Lake,210.098,2021,1,2,10
+34,2021-01-02,Z 01 Manickam Nagar Subway,374.0,2021,1,2,3
+35,2021-01-02,Z 12 Nandambakkam Canal MIOT Junction of River,834.886,2021,1,2,18
+36,2021-01-02,Z 06 Stephenson Bridge Otteri Nullah Canal,19.38,2021,1,2,9
+37,2021-01-02,Z 13 Maraimalai Adigalar Bridge,816.628,2021,1,2,26
+38,2021-01-02,Z 10 Madley Subway,487.786,2021,1,2,14
+39,2021-01-02,Z 13 Jones Road Subway,294.119,2021,1,2,25
+40,2021-01-02,Z 07 Padi kuppam Canal,473.833,2021,1,2,11

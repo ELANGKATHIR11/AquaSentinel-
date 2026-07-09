@@ -1,0 +1,6 @@
+{
+  "name": "AquaSentinel GIS Command Dashboard",
+  "description": "Industrial-grade GIS command center for real-time monitoring of floating river IoT buoys, flood-risk estimation, and pollution anomalies.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
