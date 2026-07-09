@@ -326,6 +326,8 @@ client.on('connect', () => {
                     <label className="text-[9px] text-slate-400 uppercase font-bold">Broker Host URI</label>
                     <input
                       type="text"
+                      title="Broker Host URI"
+                      placeholder="mqtt://broker.hivemq.com:1883"
                       value={brokerUrl}
                       onChange={(e) => setBrokerUrl(e.target.value)}
                       className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
@@ -335,6 +337,8 @@ client.on('connect', () => {
                     <label className="text-[9px] text-slate-400 uppercase font-bold">Topic Subscription</label>
                     <input
                       type="text"
+                      title="Topic Subscription"
+                      placeholder="aquasentinel/telemetry"
                       value={topic}
                       onChange={(e) => setTopic(e.target.value)}
                       className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
@@ -353,6 +357,8 @@ client.on('connect', () => {
                     <label className="text-[9px] text-slate-400 uppercase font-bold">Bearer Authorization Token</label>
                     <input
                       type="text"
+                      title="Bearer Authorization Token"
+                      placeholder="aq-gate-token-99x8"
                       value={authKey}
                       onChange={(e) => setAuthKey(e.target.value)}
                       className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
@@ -458,10 +464,10 @@ client.on('connect', () => {
               </div>
               <div className="w-full bg-slate-950 h-3 rounded-full overflow-hidden border border-slate-800 p-[1px]">
                 <div 
+                  ref={(el) => { if (el) el.style.width = `${predictions.floodProb * 100}%`; }}
                   className={`h-full rounded-full transition-all duration-300 ${
                     predictions.floodLevel === 'CRITICAL' ? 'bg-rose-500' : predictions.floodLevel === 'MODERATE' ? 'bg-amber-500' : 'bg-emerald-500'
                   }`}
-                  style={{ width: `${predictions.floodProb * 100}%` }}
                 ></div>
               </div>
             </div>
@@ -476,10 +482,10 @@ client.on('connect', () => {
               </div>
               <div className="w-full bg-slate-950 h-3 rounded-full overflow-hidden border border-slate-800 p-[1px]">
                 <div 
+                  ref={(el) => { if (el) el.style.width = `${predictions.anomalyProb * 100}%`; }}
                   className={`h-full rounded-full transition-all duration-300 ${
                     predictions.pollutionStatus === 'HIGH ANOMALY' ? 'bg-rose-500' : predictions.pollutionStatus === 'WARNING' ? 'bg-amber-500' : 'bg-emerald-500'
                   }`}
-                  style={{ width: `${predictions.anomalyProb * 100}%` }}
                 ></div>
               </div>
             </div>
