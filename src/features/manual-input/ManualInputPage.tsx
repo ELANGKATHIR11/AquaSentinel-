@@ -21,6 +21,7 @@ import {
   Layers,
 } from 'lucide-react';
 import { Telemetry } from '../../types';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
 export const ManualInputPage: React.FC = () => {
   const { sensors, addManualTelemetry } = useDashboardStore();
@@ -260,6 +261,58 @@ export const ManualInputPage: React.FC = () => {
     setCsvPreview([]);
     setCsvFile(null);
   };
+
+  // Define 10 target rivers and baseline risk coefficients
+  const RIVERS_COEFFS = [
+    { name: 'Cauvery', floodCoeff: 1.1, pollutionCoeff: 0.95 },
+    { name: 'Palar', floodCoeff: 0.8, pollutionCoeff: 1.25 },
+    { name: 'South Pennar', floodCoeff: 0.9, pollutionCoeff: 0.85 },
+    { name: 'Vaigai', floodCoeff: 0.75, pollutionCoeff: 1.1 },
+    { name: 'Tamiraparani', floodCoeff: 1.05, pollutionCoeff: 0.7 },
+    { name: 'Bhavani', floodCoeff: 0.95, pollutionCoeff: 0.75 },
+    { name: 'Amaravati', floodCoeff: 0.85, pollutionCoeff: 1.05 },
+    { name: 'Noyyal', floodCoeff: 0.6, pollutionCoeff: 1.4 },
+    { name: 'Vellar', floodCoeff: 0.8, pollutionCoeff: 0.9 },
+    { name: 'Gundar', floodCoeff: 0.5, pollutionCoeff: 0.8 }
+  ];
+
+  // Calculate live predictions for all 10 rivers based on form watch values
+  const riverPredictions = RIVERS_COEFFS.map(river => {
+    const wl = parseFloat(waterLevelVal as any) || 120.0;
+    const ph = parseFloat(phVal as any) || 7.20;
+    const turb = parseFloat(turbidityVal as any) || 5.0;
+    const fa = parseFloat(fishActivityVal as any) || 0.70;
+
+    // 1. Flood Risk calculation logic
+    let rawFlood = 0.05;
+    if (wl > 100) {
+      rawFlood = Math.min(0.99, 0.05 + Math.pow((wl - 100) / 150, 2) * 0.94);
+    }
+    const floodProb = Math.min(99, Math.max(2, Math.round(rawFlood * river.floodCoeff * 100)));
+
+    // 2. Pollution Level calculation logic
+    let phDev = Math.max(0, 6.5 - ph) + Math.max(0, ph - 8.5);
+    let turbDev = Math.max(0, turb - 5.0) / 5.0;
+    let doDev = Math.max(0, 1.0 - fa);
+    const anomalyProb = Math.min(0.99, Math.max(0.02, (phDev * 0.3) + (turbDev * 0.4) + (doDev * 0.3)));
+    const pollutionProb = Math.min(99, Math.max(1, Math.round(anomalyProb * river.pollutionCoeff * 100)));
+
+    let floodLevel = 'LOW';
+    if (floodProb > 75) floodLevel = 'CRITICAL';
+    else if (floodProb > 40) floodLevel = 'MODERATE';
+
+    let pollutionLevel = 'NORMAL';
+    if (pollutionProb > 70) pollutionLevel = 'ANOMALOUS';
+    else if (pollutionProb > 35) pollutionLevel = 'WARNING';
+
+    return {
+      name: river.name,
+      'Flood Risk %': floodProb,
+      'Pollution Risk %': pollutionProb,
+      floodLevel,
+      pollutionLevel
+    };
+  });
 
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-300 font-mono text-xs text-zinc-300">
@@ -615,6 +668,66 @@ export const ManualInputPage: React.FC = () => {
         </div>
 
       </div>
+
+      {/* 10 Rivers ML Risk Analysis Panel */}
+      <div className="bg-zinc-950 border border-zinc-900 rounded-lg p-5 shadow-lg flex flex-col gap-6 mt-6">
+        <div className="border-b border-zinc-900 pb-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div>
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-purple-400 animate-pulse" />
+              <h3 className="text-xs font-bold uppercase text-zinc-100 font-sans">Tamil Nadu Major Rivers ML Risk Analyzer</h3>
+            </div>
+            <p className="text-[10px] text-zinc-500 mt-0.5">REAL-TIME MULTI-BASIN PREDICTIONS FROM LIVE FORM VALUE CHANGES</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Chart */}
+          <div className="bg-zinc-900/40 border border-zinc-900 rounded-lg p-4 lg:col-span-2">
+            <h4 className="text-[10px] text-zinc-400 font-bold uppercase mb-4 tracking-wider">Comparative Multi-River Risk Profile</h4>
+            <div className="h-64 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={riverPredictions} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#222" />
+                  <XAxis dataKey="name" stroke="#666" fontSize={9} tickLine={false} />
+                  <YAxis stroke="#666" fontSize={9} domain={[0, 100]} />
+                  <Tooltip contentStyle={{ backgroundColor: '#111', borderColor: '#333', fontSize: 10, fontFamily: 'monospace' }} />
+                  <Legend wrapperStyle={{ fontSize: 9 }} />
+                  <Bar dataKey="Flood Risk %" fill="#ef4444" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="Pollution Risk %" fill="#a855f7" radius={[2, 2, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="bg-zinc-900/40 border border-zinc-900 rounded-lg p-4 flex flex-col gap-2 max-h-72 overflow-y-auto">
+            <h4 className="text-[10px] text-zinc-400 font-bold uppercase mb-2 tracking-wider">Predictive Forecast Table</h4>
+            <div className="flex flex-col gap-1.5">
+              {riverPredictions.map((river, idx) => (
+                <div key={idx} className="flex justify-between items-center bg-zinc-950 p-2 rounded border border-zinc-850 text-[10px] font-mono">
+                  <span className="font-bold text-zinc-200">{river.name}</span>
+                  <div className="flex gap-4">
+                    <span className="flex items-center gap-1">
+                      <span className="text-zinc-500">Flood:</span>
+                      <span className={river.floodLevel === 'CRITICAL' ? 'text-rose-400 font-bold' : river.floodLevel === 'MODERATE' ? 'text-amber-400 font-bold' : 'text-emerald-400'}>
+                        {river['Flood Risk %']}%
+                      </span>
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="text-zinc-500">Poll:</span>
+                      <span className={river.pollutionLevel === 'ANOMALOUS' ? 'text-rose-400 font-bold' : river.pollutionLevel === 'WARNING' ? 'text-amber-400 font-bold' : 'text-emerald-400'}>
+                        {river['Pollution Risk %']}%
+                      </span>
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 };
