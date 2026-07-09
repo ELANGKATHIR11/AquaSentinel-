@@ -305,10 +305,19 @@ export const ManualInputPage: React.FC = () => {
     if (pollutionProb > 70) pollutionLevel = 'ANOMALOUS';
     else if (pollutionProb > 35) pollutionLevel = 'WARNING';
 
+    // Scale parameters for individual rivers
+    const riverPh = Math.max(4.0, Math.min(10.0, ph + (river.pollutionCoeff - 1.0) * 0.4));
+    const riverTurb = Math.max(0.5, turb * river.pollutionCoeff);
+    const baseBod = 1.5 + (phDev * 2.5) + (turbDev * 5.0) + (doDev * 3.5);
+    const riverBod = Math.min(20, Math.max(1, baseBod * river.pollutionCoeff));
+
     return {
       name: river.name,
       'Flood Risk %': floodProb,
       'Pollution Risk %': pollutionProb,
+      'pH Level': parseFloat(riverPh.toFixed(2)),
+      'Turbidity (NTU)': parseFloat(riverTurb.toFixed(1)),
+      'BOD (mg/L)': parseFloat(riverBod.toFixed(1)),
       floodLevel,
       pollutionLevel
     };
@@ -695,6 +704,9 @@ export const ManualInputPage: React.FC = () => {
                   <Legend wrapperStyle={{ fontSize: 9 }} />
                   <Bar dataKey="Flood Risk %" fill="#ef4444" radius={[2, 2, 0, 0]} />
                   <Bar dataKey="Pollution Risk %" fill="#a855f7" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="pH Level" fill="#3b82f6" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="Turbidity (NTU)" fill="#f59e0b" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="BOD (mg/L)" fill="#10b981" radius={[2, 2, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
