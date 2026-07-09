@@ -20,6 +20,7 @@ import { CalibrationPage } from './features/calibration/CalibrationPage';
 import { SimulationPage } from './features/simulation/SimulationPage';
 import { ReportsPage } from './features/reports/ReportsPage';
 import { SettingsPage } from './features/settings/SettingsPage';
+import { IotGatewayPage } from './features/iot-gateway/IotGatewayPage';
 
 // Icon imports
 import {
@@ -36,6 +37,7 @@ import {
   ShieldAlert,
   Clock,
   User,
+  Radio,
 } from 'lucide-react';
 
 const SidebarLink: React.FC<{
@@ -156,6 +158,7 @@ const NavigationLayout: React.FC<{ children: React.ReactNode }> = ({ children })
             <SidebarLink to="/overview" icon={LayoutDashboard} label="Overview" />
             <SidebarLink to="/live-map" icon={Map} label="Live GIS Map" />
             <SidebarLink to="/sensors" icon={Cpu} label="Buoy Registry" />
+            <SidebarLink to="/iot-gateway" icon={Radio} label="IoT Gateway" />
             <SidebarLink to="/analytics" icon={BarChart3} label="Analytics Center" />
             <SidebarLink to="/alerts" icon={Bell} label="Alerts Console" badge={activeAlertsCount} />
             
@@ -211,6 +214,7 @@ export default function App() {
           <Route path="/sensor/:sensorId" element={<SensorDetailsPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/alerts" element={<AlertsPage />} />
+          <Route path="/iot-gateway" element={<IotGatewayPage />} />
           <Route path="/manual-input" element={<ManualInputPage />} />
           <Route path="/calibration" element={<CalibrationPage />} />
           <Route path="/simulation" element={<SimulationPage />} />
