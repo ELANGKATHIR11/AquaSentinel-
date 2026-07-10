@@ -6,6 +6,53 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
+:root {
+  --bg-primary: #f8fafc;      /* slate-50 */
+  --bg-secondary: #ffffff;    /* white */
+  --border-color: #e2e8f0;    /* slate-200 */
+  --text-primary: #0f172a;    /* slate-900 */
+  --text-secondary: #475569;  /* slate-600 */
+  --panel-bg: #ffffff;
+  --panel-border: #cbd5e1;
+}
+
+[data-theme="dark"] {
+  --bg-primary: #020617;      /* slate-950 */
+  --bg-secondary: #0f172a;    /* slate-900 */
+  --border-color: #1e293b;    /* slate-800 */
+  --text-primary: #f8fafc;    /* slate-50 */
+  --text-secondary: #cbd5e1;  /* slate-300 */
+  --panel-bg: #0f172a;
+  --panel-border: #1e293b;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Redefine slate backgrounds and texts to follow theme variables */
+.bg-slate-950 {
+  background-color: var(--bg-primary) !important;
+}
+
+.bg-slate-900 {
+  background-color: var(--bg-secondary) !important;
+}
+
+.border-slate-800 {
+  border-color: var(--border-color) !important;
+}
+
+.text-slate-100, .text-slate-200, .text-white {
+  color: var(--text-primary) !important;
+}
+
+.text-slate-300, .text-slate-400 {
+  color: var(--text-secondary) !important;
+}
+
 /* Scrollbar styles matching the command center style */
 ::-webkit-scrollbar {
   width: 6px;
@@ -25,20 +72,20 @@
   background: #334155; /* slate-700 */
 }
 
-/* Custom dark Leaflet overrides */
+/* Custom Leaflet overrides */
 .leaflet-container {
   font-family: 'Inter', sans-serif !important;
-  background-color: #020617 !important; /* slate-950 */
+  background-color: var(--bg-primary) !important;
 }
 
 .leaflet-popup-content-wrapper {
-  background-color: #0f172a !important; /* slate-900 */
-  color: #f8fafc !important; /* slate-50 */
-  border: 1px solid #1e293b !important; /* slate-800 */
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
   border-radius: 8px !important;
   padding: 0 !important;
   font-size: 11px !important;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15) !important;
 }
 
 .leaflet-popup-content {
@@ -47,25 +94,26 @@
 }
 
 .leaflet-popup-tip {
-  background-color: #0f172a !important;
-  border-left: 1px solid #1e293b !important;
-  border-bottom: 1px solid #1e293b !important;
+  background-color: var(--bg-secondary) !important;
+  border-left: 1px solid var(--border-color) !important;
+  border-bottom: 1px solid var(--border-color) !important;
 }
 
 .leaflet-bar {
-  border: 1px solid #1e293b !important;
+  border: 1px solid var(--border-color) !important;
   box-shadow: none !important;
 }
 
 .leaflet-bar a {
-  background-color: #0f172a !important;
-  color: #cbd5e1 !important; /* slate-300 */
-  border-bottom: 1px solid #1e293b !important;
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-secondary) !important;
+  border-bottom: 1px solid var(--border-color) !important;
   transition: all 0.15s ease;
 }
 
 .leaflet-bar a:hover {
-  background-color: #1e293b !important;
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
   color: #ffffff !important;
 }
 

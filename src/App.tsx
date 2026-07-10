@@ -38,6 +38,8 @@ import {
   Clock,
   User,
   Radio,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 const SidebarLink: React.FC<{
@@ -73,8 +75,13 @@ const SidebarLink: React.FC<{
 };
 
 const NavigationLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { connectionStatus, mockMode, alerts, theme } = useDashboardStore();
+  const { connectionStatus, mockMode, alerts, theme, toggleTheme } = useDashboardStore();
   const [currentTime, setCurrentTime] = useState<string>('');
+
+  // Synchronize HTML element theme
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   // Live clock ticker
   useEffect(() => {
@@ -130,6 +137,19 @@ const NavigationLayout: React.FC<{ children: React.ReactNode }> = ({ children })
             <p className="text-[10px] uppercase tracking-widest leading-none text-slate-500">Server Time</p>
             <p className="text-sm font-mono text-slate-200">{currentTime}</p>
           </div>
+
+          {/* Light/Dark Mode Switcher */}
+          <button
+            onClick={toggleTheme}
+            className={`p-2 rounded-lg border transition-all cursor-pointer active:scale-95 flex items-center justify-center ${
+              theme === 'dark'
+                ? 'bg-slate-800 border-slate-700 text-amber-400 hover:bg-slate-700'
+                : 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'
+            }`}
+            title="Toggle Light/Dark Theme"
+          >
+            {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-700" />}
+          </button>
 
           {/* Duty Officer identifier */}
           <div className="flex items-center gap-3 pl-6 border-l border-slate-800">
