@@ -93,3 +93,63 @@ async def gis_sites(db: AsyncSession = Depends(get_db_session)) -> GeoJSONFeatur
     result = await db.execute(select(RiverSite))
     features = [_site_feature(s) for s in result.scalars().all()]
     return GeoJSONFeatureCollection(features=[f for f in features if f is not None])
+
+
+import csv
+import io
+import json
+from fastapi.responses import StreamingResponse
+from apps.api.models import TelemetryReading
+
+@router.get("/export")
+async def export_telemetry(
+    format: str = "csv",
+    sensor_id: str | None = None,
+    db: AsyncSession = Depends(get_db_session)
+):
+    """Export telemetry readings as CSV or GeoJSON."""
+    stmt = select(TelemetryReading).order_by(TelemetryReading.timestamp.desc()).limit(1000)
+    if sensor_id:
+        stmt = stmt.where(TelemetryReading.sensor_id == sensor_id)
+        
+    result = await db.execute(stmt)
+    readings = result.scalars().all()
+    
+    if format == "csv":
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow(["id", "sensor_id", "timestamp", "water_level_cm", "ph", "turbidity_ntu", "temperature_c", "battery_voltage"])
+        for r in readings:
+            writer.writerow([r.id, r.sensor_id, r.timestamp.isoformat(), r.water_level_cm, r.ph, r.turbidity_ntu, r.temperature_c, r.battery_voltage])
+            
+        output.seek(0)
+        return StreamingResponse(
+            io.BytesIO(output.getvalue().encode("utf-8")),
+            media_type="text/csv",
+            headers={"Content-Disposition": "attachment; filename=telemetry_export.csv"}
+        )
+    elif format == "geojson":
+        features = []
+        for r in readings:
+            if r.longitude and r.latitude:
+                features.append({
+                    "type": "Feature",
+                    "geometry": {"type": "Point", "coordinates": [r.longitude, r.latitude]},
+                    "properties": {
+                        "reading_id": r.id,
+                        "sensor_id": r.sensor_id,
+                        "timestamp": r.timestamp.isoformat(),
+                        "water_level_cm": r.water_level_cm,
+                        "ph": r.ph,
+                        "turbidity_ntu": r.turbidity_ntu,
+                        "temperature_c": r.temperature_c,
+                    }
+                })
+        fc = {"type": "FeatureCollection", "features": features}
+        return StreamingResponse(
+            io.BytesIO(json.dumps(fc).encode("utf-8")),
+            media_type="application/json",
+            headers={"Content-Disposition": "attachment; filename=telemetry_export.geojson"}
+        )
+    else:
+        raise HTTPException(status_code=400, detail="Invalid format. Supported: csv, geojson")

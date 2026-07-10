@@ -1,0 +1,43 @@
+# DVC pipeline stages for AquaSentinel ML workflows
+stages:
+  prepare_data:
+    cmd: python run_pipeline.py
+    deps:
+      - run_pipeline.py
+      - data/raw/sources.json
+    params:
+      - prepare.test_split
+      - prepare.seed
+    outs:
+      - data/processed/
+
+  train_flood_model:
+    cmd: python apps/api/scripts/train_models.py --model flood
+    deps:
+      - apps/api/scripts/train_models.py
+      - data/processed/
+    params:
+      - train_flood.n_estimators
+      - train_flood.max_depth
+    outs:
+      - apps/api/ml/registry/flood_risk_rf/latest.txt
+
+  train_pollution_model:
+    cmd: python apps/api/scripts/train_models.py --model pollution
+    deps:
+      - apps/api/scripts/train_models.py
+      - data/processed/
+    params:
+      - train_pollution.n_estimators
+      - train_pollution.contamination
+    outs:
+      - apps/api/ml/registry/pollution_anomaly_if/latest.txt
+
+  evaluate_models:
+    cmd: python -m pytest tests/api/test_ml.py
+    deps:
+      - tests/api/test_ml.py
+      - apps/api/ml/registry/
+    metrics:
+      - metrics.json:
+          cache: false

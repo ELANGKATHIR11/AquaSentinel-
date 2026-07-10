@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AquaSentinelDataManifest",
+  "description": "JSON Schema to validate dataset manifest registries in AquaSentinel",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "filename": { "type": "string" },
+      "size_bytes": { "type": "integer" },
+      "sha256_checksum": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
+      "source_url": { "type": "string" },
+      "license": { "type": "string" },
+      "intended_use": { "type": "string" },
+      "data_classification": { "type": "string", "enum": ["public", "internal", "restricted"] }
+    },
+    "required": ["filename", "size_bytes", "sha256_checksum", "source_url", "license", "intended_use", "data_classification"]
+  }
+}

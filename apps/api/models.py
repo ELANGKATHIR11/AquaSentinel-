@@ -421,3 +421,124 @@ class AuditLog(Base):
     details: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     ip_address: Mapped[str | None] = mapped_column(String(45), nullable=True)
     request_id: Mapped[str | None] = mapped_column(String(40), nullable=True)
+
+
+# ---------------------------------------------------------------------------
+# Additional Enterprise & Operational Models (Phase 1)
+# ---------------------------------------------------------------------------
+
+class Role(Base):
+    __tablename__ = "roles"
+
+    id: Mapped[str] = mapped_column(String(40), primary_key=True)  # e.g. 'analyst', 'operator'
+    name: Mapped[str] = mapped_column(String(80), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class UserRole(Base):
+    __tablename__ = "user_roles"
+
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    role_id: Mapped[str] = mapped_column(ForeignKey("roles.id", ondelete="CASCADE"), primary_key=True)
+
+
+class TelemetryQualityFlags(Base):
+    __tablename__ = "telemetry_quality_flags"
+
+    reading_id: Mapped[int] = mapped_column(ForeignKey("telemetry_readings.id", ondelete="CASCADE"), primary_key=True)
+    is_ph_valid: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_turbidity_valid: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_water_level_valid: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_battery_valid: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_tilt_valid: Mapped[bool] = mapped_column(Boolean, default=True)
+    flagged_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class ModelRegistry(Base):
+    __tablename__ = "model_registry"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    model_name: Mapped[str] = mapped_column(String(60), nullable=False)
+    version: Mapped[str] = mapped_column(String(20), nullable=False)
+    metrics: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    trained_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class AlertEvent(Base):
+    __tablename__ = "alert_events"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    alert_id: Mapped[str] = mapped_column(ForeignKey("alerts.id", ondelete="CASCADE"), nullable=False)
+    event_type: Mapped[str] = mapped_column(String(50), nullable=False)  # e.g., 'created', 'updated', 'escalated'
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    details: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class AlertAcknowledgement(Base):
+    __tablename__ = "alert_acknowledgements"
+
+    alert_id: Mapped[str] = mapped_column(ForeignKey("alerts.id", ondelete="CASCADE"), primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(40), nullable=False)
+    acknowledged_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class AlertAssignment(Base):
+    __tablename__ = "alert_assignments"
+
+    alert_id: Mapped[str] = mapped_column(ForeignKey("alerts.id", ondelete="CASCADE"), primary_key=True)
+    assigned_to_user_id: Mapped[str] = mapped_column(String(40), nullable=False)
+    assigned_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    assigned_by_user_id: Mapped[str] = mapped_column(String(40), nullable=False)
+
+
+class CalibrationHistory(Base):
+    __tablename__ = "calibration_history"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sensor_id: Mapped[str] = mapped_column(ForeignKey("sensor_nodes.sensor_id"), nullable=False)
+    ph_offset: Mapped[float] = mapped_column(Float, nullable=False)
+    ph_slope: Mapped[float] = mapped_column(Float, nullable=False)
+    turbidity_zero_offset: Mapped[float] = mapped_column(Float, nullable=False)
+    water_level_offset_cm: Mapped[float] = mapped_column(Float, nullable=False)
+    calibrated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    operator_id: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    status: Mapped[str] = mapped_column(String(30), nullable=False)
+
+
+class GatewayHealthLog(Base):
+    __tablename__ = "gateway_health_logs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    gateway_id: Mapped[str] = mapped_column(ForeignKey("gateways.id"), nullable=False)
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    cpu_temp: Mapped[float | None] = mapped_column(Float, nullable=True)
+    ram_usage_pct: Mapped[float | None] = mapped_column(Float, nullable=True)
+    disk_usage_pct: Mapped[float | None] = mapped_column(Float, nullable=True)
+    network_type: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    uptime_seconds: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+class DeviceCommand(Base):
+    __tablename__ = "device_commands"
+
+    id: Mapped[str] = mapped_column(String(40), primary_key=True, default=lambda: f"cmd_{uuid.uuid4().hex[:12]}")
+    sensor_id: Mapped[str] = mapped_column(ForeignKey("sensor_nodes.sensor_id"), nullable=False)
+    command_type: Mapped[str] = mapped_column(String(60), nullable=False)
+    payload: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    status: Mapped[str] = mapped_column(String(20), default="pending")  # pending | sent | acknowledged | expired
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class CommandAcknowledgement(Base):
+    __tablename__ = "command_acknowledgements"
+
+    command_id: Mapped[str] = mapped_column(ForeignKey("device_commands.id", ondelete="CASCADE"), primary_key=True)
+    sensor_id: Mapped[str] = mapped_column(String(20), nullable=False)
+    acknowledged_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    status: Mapped[str] = mapped_column(String(20), default="success")
+    details: Mapped[str | None] = mapped_column(Text, nullable=True)
+

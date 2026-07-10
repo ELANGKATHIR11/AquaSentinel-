@@ -51,6 +51,8 @@ from apps.api.models import (
     TelemetryReading,
     User,
     UserRoleEnum,
+    Role,
+    UserRole,
 )
 
 settings = get_settings()
@@ -410,6 +412,57 @@ async def seed() -> None:
 
         await session.commit()
         print(f"Seeded {total_readings} demo telemetry readings (source=simulation)")
+
+        # Demo roles
+        rbac_roles = [
+            {"id": "super_admin", "name": "Super Administrator", "description": "Global administrator across all organizations"},
+            {"id": "org_admin", "name": "Organization Administrator", "description": "Administrator of a single organization"},
+            {"id": "operations_manager", "name": "Operations Manager", "description": "Manage river basins, gateways, and field operations"},
+            {"id": "field_engineer", "name": "Field Engineer", "description": "Deploy, inspect, and calibrate sensors and gateways"},
+            {"id": "analyst", "name": "Analyst", "description": "Access GIS maps, telemetry charts, and model results"},
+            {"id": "viewer", "name": "Viewer", "description": "Read-only access to basic dashboards"},
+        ]
+        for role_data in rbac_roles:
+            existing_role = await session.get(Role, role_data["id"])
+            if not existing_role:
+                role_obj = Role(**role_data)
+                session.add(role_obj)
+        await session.commit()
+        print("Seeded RBAC roles")
+
+        # Demo users
+        from apps.api.auth import hash_password
+        demo_users = [
+            {"email": "superadmin@aquasentinel.com", "display_name": "Super Admin User", "role_id": "super_admin"},
+            {"email": "admin@aquasentinel.com", "display_name": "Org Admin User", "role_id": "org_admin"},
+            {"email": "operator@aquasentinel.com", "display_name": "Operations Manager User", "role_id": "operations_manager"},
+            {"email": "field@aquasentinel.com", "display_name": "Field Engineer User", "role_id": "field_engineer"},
+            {"email": "analyst@aquasentinel.com", "display_name": "Analyst User", "role_id": "analyst"},
+            {"email": "viewer@aquasentinel.com", "display_name": "Viewer User", "role_id": "viewer"},
+        ]
+        for user_data in demo_users:
+            import uuid
+            # Check if user already exists
+            from sqlalchemy import select
+            user_select = await session.execute(select(User).where(User.email == user_data["email"]))
+            existing_user = user_select.scalar_one_or_none()
+            if not existing_user:
+                new_user = User(
+                    id=str(uuid.uuid4()),
+                    organization_id=DEMO_ORG["id"],
+                    email=user_data["email"],
+                    display_name=user_data["display_name"],
+                    hashed_password=hash_password("Password123!"),
+                    role=UserRoleEnum(user_data["role_id"]) if user_data["role_id"] in [u.value for u in UserRoleEnum] else UserRoleEnum.viewer,
+                    is_active=True,
+                )
+                session.add(new_user)
+                await session.flush()
+                # Associate UserRole
+                assoc = UserRole(user_id=new_user.id, role_id=user_data["role_id"])
+                session.add(assoc)
+        await session.commit()
+        print("Seeded demo users and user-role associations")
 
         # Demo calibration profiles
         for sensor_data in SENSORS[:3]:

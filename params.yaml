@@ -1,0 +1,13 @@
+# Hyperparameter configurations for DVC pipeline stages
+
+prepare:
+  test_split: 0.2
+  seed: 42
+
+train_flood:
+  n_estimators: 100
+  max_depth: 10
+
+train_pollution:
+  n_estimators: 100
+  contamination: 0.05

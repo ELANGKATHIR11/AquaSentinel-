@@ -1,0 +1,10 @@
+# DVC Ignore file
+# Ignore system directories and build/code caches
+
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+node_modules/
+.git/
+.dvc/cache/
+.dvc/tmp/

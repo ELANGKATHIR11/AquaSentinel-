@@ -24,7 +24,7 @@ from apps.api.config import get_settings
 from apps.api.database import close_engine, get_engine
 from apps.api.logging_config import configure_logging
 from apps.api.mqtt_client import get_mqtt_client
-from apps.api.routers import alerts, auth, gis, health, ml, sensors, telemetry
+from apps.api.routers import alerts, auth, gis, health, ml, sensors, telemetry, commands
 from apps.api.websocket_manager import get_ws_manager
 
 settings = get_settings()
@@ -149,6 +149,7 @@ app.include_router(telemetry.router, prefix="/api/v1")
 app.include_router(alerts.router, prefix="/api/v1")
 app.include_router(gis.router, prefix="/api/v1")
 app.include_router(ml.router, prefix="/api/v1")
+app.include_router(commands.router, prefix="/api/v1")
 
 
 # ---------------------------------------------------------------------------
@@ -162,19 +163,51 @@ ws_manager = get_ws_manager()
 
 @app.websocket("/ws/telemetry")
 async def ws_telemetry(websocket: WebSocket) -> None:
+    token = websocket.query_params.get("token")
+    if token:
+        try:
+            from apps.api.auth import decode_token
+            decode_token(token)
+        except Exception:
+            await websocket.close(code=4003)
+            return
     await ws_manager.handle_telemetry_ws(websocket)
 
 
 @app.websocket("/ws/alerts")
 async def ws_alerts(websocket: WebSocket) -> None:
+    token = websocket.query_params.get("token")
+    if token:
+        try:
+            from apps.api.auth import decode_token
+            decode_token(token)
+        except Exception:
+            await websocket.close(code=4003)
+            return
     await ws_manager.handle_alerts_ws(websocket)
 
 
 @app.websocket("/ws/dashboard")
 async def ws_dashboard(websocket: WebSocket) -> None:
+    token = websocket.query_params.get("token")
+    if token:
+        try:
+            from apps.api.auth import decode_token
+            decode_token(token)
+        except Exception:
+            await websocket.close(code=4003)
+            return
     await ws_manager.handle_dashboard_ws(websocket)
 
 
 @app.websocket("/ws/device-health")
 async def ws_device_health(websocket: WebSocket) -> None:
+    token = websocket.query_params.get("token")
+    if token:
+        try:
+            from apps.api.auth import decode_token
+            decode_token(token)
+        except Exception:
+            await websocket.close(code=4003)
+            return
     await ws_manager.handle_device_health_ws(websocket)

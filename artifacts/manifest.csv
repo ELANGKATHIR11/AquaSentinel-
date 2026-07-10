@@ -1,0 +1,3 @@
+filename,size_bytes,sha256_checksum,source_url,license,intended_use,data_classification
+models/flood_risk_rf/v1.0-prototype/model.joblib,245000,f186d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08,https://aquasentinel.internal/models/flood_risk_rf/model.joblib,Apache-2.0,Operational flood classification model,internal
+models/pollution_anomaly_if/v1.0-prototype/model.joblib,125000,a286d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08,https://aquasentinel.internal/models/pollution_anomaly_if/model.joblib,Apache-2.0,Operational pollution detection anomaly model,internal

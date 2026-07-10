@@ -139,3 +139,33 @@ def clear_cache() -> None:
     with _lock:
         _cache.clear()
     log.info("model.cache_cleared")
+
+
+def check_model_drift(model_name: str, current_features: dict[str, Any], baseline_features: list[dict[str, Any]]) -> dict[str, Any]:
+    """
+    Placeholder drift diagnostic.
+    Compares current feature values to baseline distribution.
+    In future production versions, this will calculate Population Stability Index (PSI)
+    or Kolmogorov-Smirnov (KS) stats to identify distribution drift.
+    """
+    drift_detected = False
+    details = {}
+    
+    if baseline_features:
+        try:
+            wl_vals = [f.get("water_level_cm", 150.0) for f in baseline_features]
+            mean_wl = sum(wl_vals) / len(wl_vals)
+            curr_wl = current_features.get("water_level_cm", 150.0)
+            variation = abs(curr_wl - mean_wl) / (mean_wl + 1e-5)
+            details["water_level_variation"] = variation
+            if variation > 1.5:  # More than 150% variance from baseline
+                drift_detected = True
+        except Exception:
+            pass
+
+    return {
+        "model_name": model_name,
+        "drift_detected": drift_detected,
+        "details": details,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }

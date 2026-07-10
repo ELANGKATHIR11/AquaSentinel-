@@ -187,11 +187,34 @@ if __name__ == "__main__":
     )
     parser.add_argument("--interval", type=float, default=5.0, help="Send interval in seconds")
     parser.add_argument("--quiet", action="store_true", help="Suppress per-packet output")
+    parser.add_argument("--load", action="store_true", help="Generate 100 concurrent load nodes")
     args = parser.parse_args()
+
+    s_ids = [s.strip() for s in args.sensors.split(",")]
+
+    if args.load:
+        print("[Simulator] Generating 100-node load test configuration...")
+        for i in range(100):
+            sensor_name = f"AQ{100 + i}"
+            SENSOR_BASELINES[sensor_name] = {
+                "name": f"Load Node {100 + i}",
+                "gateway_id": f"GW00{1 + (i % 3)}",
+                "lat": 13.0 + random.uniform(-0.5, 0.5),
+                "lon": 80.1 + random.uniform(-0.5, 0.5),
+                "water_level_cm": 150.0 + random.uniform(-50, 50),
+                "ph": 7.0 + random.uniform(-1, 1),
+                "turbidity_ntu": 15.0 + random.uniform(-10, 20),
+                "temperature_c": 28.0 + random.uniform(-2, 2),
+                "battery_voltage": 3.7 + random.uniform(-0.5, 0.5),
+                "rssi": -90 + random.randint(-10, 10),
+                "snr": 5.0 + random.uniform(-5, 5),
+            }
+            _sequence_counters[sensor_name] = 0
+        s_ids = [f"AQ{100 + i}" for i in range(100)]
 
     run_simulator(
         api_url=args.api,
-        sensor_ids=[s.strip() for s in args.sensors.split(",")],
+        sensor_ids=s_ids,
         interval_sec=args.interval,
         verbose=not args.quiet,
     )

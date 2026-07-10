@@ -37,19 +37,20 @@ from apps.api.config import get_settings
 log = structlog.get_logger(__name__)
 settings = get_settings()
 
-# ---------------------------------------------------------------------------
-# Password hashing
-# ---------------------------------------------------------------------------
-
-_pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+import bcrypt
 
 
 def hash_password(plain: str) -> str:
-    return _pwd_context.hash(plain)
+    # Use native bcrypt to hash passwords securely
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(plain.encode("utf-8"), salt).decode("utf-8")
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return _pwd_context.verify(plain, hashed)
+    try:
+        return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
+    except Exception:
+        return False
 
 
 # ---------------------------------------------------------------------------
@@ -59,7 +60,8 @@ def verify_password(plain: str, hashed: str) -> bool:
 class Role(str, Enum):
     viewer = "viewer"
     analyst = "analyst"
-    operator = "operator"
+    field_engineer = "field_engineer"
+    operations_manager = "operations_manager"
     org_admin = "org_admin"
     super_admin = "super_admin"
 
@@ -67,16 +69,20 @@ class Role(str, Enum):
 _ROLE_RANK = {
     Role.viewer: 0,
     Role.analyst: 1,
-    Role.operator: 2,
-    Role.org_admin: 3,
-    Role.super_admin: 4,
+    Role.field_engineer: 2,
+    Role.operations_manager: 3,
+    Role.org_admin: 4,
+    Role.super_admin: 5,
 }
 
 
 def has_permission(user_role: str, required_role: str) -> bool:
     """Returns True if user_role >= required_role in the role hierarchy."""
     try:
-        return _ROLE_RANK[Role(user_role)] >= _ROLE_RANK[Role(required_role)]
+        # map legacy 'operator' role to operations_manager for compatibility
+        u_role = "operations_manager" if user_role == "operator" else user_role
+        r_role = "operations_manager" if required_role == "operator" else required_role
+        return _ROLE_RANK[Role(u_role)] >= _ROLE_RANK[Role(r_role)]
     except (ValueError, KeyError):
         return False
 
@@ -210,7 +216,9 @@ def require_role(minimum_role: str):
 
 
 # Convenience role dependencies
-require_operator = require_role("operator")
+require_operator = require_role("operations_manager")
+require_operations_manager = require_role("operations_manager")
+require_field_engineer = require_role("field_engineer")
 require_analyst = require_role("analyst")
 require_org_admin = require_role("org_admin")
 require_super_admin = require_role("super_admin")

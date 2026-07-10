@@ -149,6 +149,17 @@ class OfflineQueue:
                     retry_count INTEGER DEFAULT 0
                 )
             """)
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS dead_letter_packets (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    sensor_id TEXT NOT NULL,
+                    sequence_no INTEGER,
+                    payload_json TEXT NOT NULL,
+                    payload_hash TEXT NOT NULL,
+                    reason TEXT,
+                    failed_at TEXT NOT NULL
+                )
+            """)
             conn.execute("CREATE INDEX IF NOT EXISTS idx_created ON pending_packets(created_at)")
 
     def enqueue(self, payload: dict[str, Any]) -> bool:
@@ -172,14 +183,14 @@ class OfflineQueue:
         except sqlite3.IntegrityError:
             return False  # Duplicate
 
-    def get_pending(self, limit: int = 50) -> list[tuple[int, dict[str, Any]]]:
-        """Get oldest pending packets."""
+    def get_pending(self, limit: int = 50) -> list[tuple[int, dict[str, Any], int]]:
+        """Get oldest pending packets. Returns list of (id, payload, retry_count)."""
         with sqlite3.connect(self.db_path) as conn:
             rows = conn.execute(
-                "SELECT id, payload_json FROM pending_packets ORDER BY id ASC LIMIT ?",
+                "SELECT id, payload_json, retry_count FROM pending_packets ORDER BY id ASC LIMIT ?",
                 (limit,),
             ).fetchall()
-        return [(row[0], json.loads(row[1])) for row in rows]
+        return [(row[0], json.loads(row[1]), row[2]) for row in rows]
 
     def mark_delivered(self, packet_id: int) -> None:
         with sqlite3.connect(self.db_path) as conn:
@@ -191,6 +202,20 @@ class OfflineQueue:
                 "UPDATE pending_packets SET retry_count = retry_count + 1 WHERE id = ?",
                 (packet_id,),
             )
+
+    def move_to_dead_letter(self, packet_id: int, reason: str) -> None:
+        with sqlite3.connect(self.db_path) as conn:
+            row = conn.execute(
+                "SELECT sensor_id, sequence_no, payload_json, payload_hash FROM pending_packets WHERE id = ?",
+                (packet_id,),
+            ).fetchone()
+            if row:
+                conn.execute(
+                    "INSERT INTO dead_letter_packets (sensor_id, sequence_no, payload_json, payload_hash, reason, failed_at) "
+                    "VALUES (?, ?, ?, ?, ?, ?)",
+                    (row[0], row[1], row[2], row[3], reason, datetime.now(timezone.utc).isoformat()),
+                )
+                conn.execute("DELETE FROM pending_packets WHERE id = ?", (packet_id,))
 
     def queue_size(self) -> int:
         with sqlite3.connect(self.db_path) as conn:
@@ -268,14 +293,22 @@ class GatewayBridge:
         while self._running:
             pending = self.queue.get_pending(limit=20)
             if pending and self._online:
-                for packet_id, payload in pending:
+                for packet_id, payload, retry_count in pending:
+                    if retry_count >= 5:
+                        self.queue.move_to_dead_letter(packet_id, "Max retries (5) exceeded")
+                        print(f"[GW] Packet {packet_id} moved to dead-letter (max retries reached)")
+                        continue
+
                     if await self._send_payload(payload):
                         self.queue.mark_delivered(packet_id)
                         self._stats["replayed"] += 1
                         print(f"[GW] Replayed queued packet {packet_id}")
                     else:
                         self.queue.increment_retry(packet_id)
-                        await asyncio.sleep(self._retry_delay)
+                        # Exponential backoff with jitter
+                        jitter = random.uniform(0.8, 1.2)
+                        sleep_time = self._retry_delay * jitter
+                        await asyncio.sleep(sleep_time)
                         self._retry_delay = min(self._retry_delay * 2, 30.0)
                         break
             await asyncio.sleep(5.0)

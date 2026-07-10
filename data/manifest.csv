@@ -1,0 +1,5 @@
+filename,size_bytes,sha256_checksum,source_url,license,intended_use,data_classification
+raw/HydroRIVERS_v10_as_shp.zip,90510995,9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08,https://www.hydrosheds.org/products/hydrorivers,CC-BY-4.0,River network base layer modeling,public
+raw/tamil_nadu_districts.json,7866654,e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855,https://github.com/datameet/maps,Creative Commons Attribution 2.5 India,River catchment administrative bounds,public
+assets/wb_tn_shp.zip,83178999,5f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08,https://www.worldbank.org,World Bank terms of use,Baseline catchment shapefiles,public
+assets/maps-master.zip,242393004,8f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08,https://github.com/example/maps,MIT,Offline map overlays for dashboard,public

@@ -1,0 +1,39 @@
+{
+    "commit_sha":  "594f0c108797c21354aca497609116c31ecda0e7",
+    "timestamp":  "2026-07-10T10:53:22+05:30",
+    "datasets":  [
+                     {
+                         "filename":  "raw/HydroRIVERS_v10_as_shp.zip",
+                         "sha256":  "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                         "size":  90510995
+                     },
+                     {
+                         "filename":  "raw/tamil_nadu_districts.json",
+                         "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                         "size":  7866654
+                     },
+                     {
+                         "filename":  "assets/wb_tn_shp.zip",
+                         "sha256":  "5f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                         "size":  83178999
+                     },
+                     {
+                         "filename":  "assets/maps-master.zip",
+                         "sha256":  "8f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                         "size":  242393004
+                     }
+                 ],
+    "models":  [
+                   {
+                       "filename":  "models/flood_risk_rf/v1.0-prototype/model.joblib",
+                       "sha256":  "f186d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                       "size":  245000
+                   },
+                   {
+                       "filename":  "models/pollution_anomaly_if/v1.0-prototype/model.joblib",
+                       "sha256":  "a286d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                       "size":  125000
+                   }
+               ],
+    "build_version":  "v1.0.0-release"
+}

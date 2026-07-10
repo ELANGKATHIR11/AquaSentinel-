@@ -140,8 +140,15 @@ def get_ws_manager() -> WebSocketManager:
 async def broadcast_telemetry(reading: Any) -> None:
     """Broadcast a telemetry reading to all connected WebSocket clients."""
     manager = get_ws_manager()
+    is_flagged = hasattr(reading, "quality_flag") and (
+        (hasattr(reading.quality_flag, "value") and reading.quality_flag.value in ("suspect", "bad")) or
+        (isinstance(reading.quality_flag, str) and reading.quality_flag in ("suspect", "bad"))
+    )
+    event_type = "telemetry.quality_flagged" if is_flagged else "telemetry.created"
+
     data = {
         "type": "telemetry",
+        "event": event_type,
         "sensor_id": reading.sensor_id,
         "timestamp": reading.timestamp.isoformat() if hasattr(reading.timestamp, "isoformat") else str(reading.timestamp),
         "water_level_cm": reading.water_level_cm,
@@ -165,6 +172,7 @@ async def broadcast_alert(alert: Any) -> None:
     manager = get_ws_manager()
     data = {
         "type": "alert",
+        "event": "alert.created",
         "alert_id": alert.id,
         "sensor_id": alert.sensor_id,
         "severity": alert.severity.value if hasattr(alert.severity, "value") else str(alert.severity),

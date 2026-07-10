@@ -1,13 +1,85 @@
+# Node and Build outputs
 node_modules/
-build/
 dist/
+build/
 coverage/
 .DS_Store
 *.log
-.env*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python environment & cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+.venv/
+venv/
+env/
+.env
+.env.production
+.env.local
+.env.*.local
 !.env.example
+
+# Database dumps & temp files
+*.sql
+*.dump
+*.db
+logs/
+*.tmp
+*.temp
+
+# AquaSentinel Data Policy Exclusions
+# Raw, interim and processed data directories are fully ignored (tracked by DVC/external storage)
 data/raw/
 data/interim/
-assets/*.zip
+data/processed/
+
+# Model registry binaries are ignored (tracked by DVC/object-storage)
+apps/api/ml/registry/**/*.joblib
+apps/api/ml/registry/**/*.pkl
+apps/api/ml/registry/**/*.onnx
+apps/api/ml/registry/**/*.pt
+apps/api/ml/registry/**/*.pth
+
+# Explicit large binary extensions in assets/ or raw data paths
+*.tif
+*.tiff
+*.jp2
+*.h5
+*.hdf5
+*.zip
+*.7z
+*.rar
+*.mp4
+*.avi
+*.parquet
+*.gpkg
+*.shp
+*.dbf
+*.shx
+
+# Exclude large CSV or JSON data tables in raw/processed paths (manifests and schemas are kept)
+data/raw/**/*.csv
+data/raw/**/*.json
+data/processed/**/*.csv
+data/processed/**/*.json
+assets/**/*.zip
+assets/**/*.gdb/
 assets/wb_tn_shp/
 assets/maps-master/
+**/*.shp
+**/*.dbf
+**/*.shx
+
+# Keep git-tracked directories
+!data/demo/
+!data/manifests/
+!data/README.md
+!data/manifest.csv
+!data/manifest.schema.json

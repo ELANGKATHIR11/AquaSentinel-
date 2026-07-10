@@ -91,10 +91,13 @@ class AquaSentinelMQTTClient:
 
         import httpx
 
+        lwt_topic = f"{self.topic_prefix}/clients/backend/status"
+
         def on_connect(client: Any, userdata: Any, flags: Any, rc: int, properties: Any = None) -> None:
             if rc == 0:
                 topic = f"{self.topic_prefix}/#"
-                client.subscribe(topic)
+                client.subscribe(topic, qos=1)
+                client.publish(lwt_topic, payload="online", qos=1, retain=True)
                 log.info("mqtt.connected", broker=f"{self.broker_host}:{self.broker_port}", topic=topic)
             else:
                 log.error("mqtt.connect_failed", rc=rc)
@@ -135,6 +138,7 @@ class AquaSentinelMQTTClient:
         self._client.on_connect = on_connect
         self._client.on_message = on_message
         self._client.on_disconnect = on_disconnect
+        self._client.will_set(lwt_topic, payload="offline", qos=1, retain=True)
 
         if self.username:
             self._client.username_pw_set(self.username, self.password)

@@ -92,6 +92,70 @@ async def _verify_gateway(gateway_id: str | None, api_key: str | None, db: Async
     return incoming_hash == gateway.api_key_hash
 
 
+async def _process_alerts_for_reading(reading: TelemetryReading, db: AsyncSession) -> None:
+    from apps.api.models import Alert, AlertSeverityEnum, AlertStatusEnum, AlertTypeEnum
+    
+    alert_type = None
+    severity = None
+    summary = ""
+
+    tilt_deg = getattr(reading, "tilt_deg", None)
+    battery_voltage = getattr(reading, "battery_voltage", None)
+    water_level_cm = getattr(reading, "water_level_cm", None)
+    pollution_score = getattr(reading, "pollution_anomaly_score", None)
+
+    if tilt_deg and tilt_deg > 45:
+        alert_type = AlertTypeEnum.tamper
+        severity = AlertSeverityEnum.critical
+        summary = f"Buoy tilt warning: {tilt_deg}° tilt indicates unit may be capsized or displaced."
+    elif battery_voltage and battery_voltage < 3.0:
+        alert_type = AlertTypeEnum.device_health
+        severity = AlertSeverityEnum.low
+        summary = f"Low battery voltage: {battery_voltage}V (threshold 3.0V)."
+    elif water_level_cm and water_level_cm > 250:
+        alert_type = AlertTypeEnum.flood
+        severity = AlertSeverityEnum.high
+        summary = f"High water level detected: {water_level_cm} cm."
+    elif pollution_score and pollution_score > 0.75:
+        alert_type = AlertTypeEnum.pollution
+        severity = AlertSeverityEnum.high
+        summary = f"Water pollution anomaly detected (anomaly score: {pollution_score})."
+
+    if alert_type and severity:
+        # Cooldown check: search active alerts for this sensor and type
+        from sqlalchemy import select
+        stmt = select(Alert).where(
+            Alert.sensor_id == reading.sensor_id,
+            Alert.type == alert_type,
+            Alert.status == AlertStatusEnum.active
+        )
+        res = await db.execute(stmt)
+        active_alert = res.scalar_one_or_none()
+        if not active_alert:
+            import uuid
+            alert = Alert(
+                id=f"alt_{uuid.uuid4().hex[:12]}",
+                sensor_id=reading.sensor_id,
+                timestamp=reading.timestamp,
+                severity=severity,
+                type=alert_type,
+                summary=summary,
+                status=AlertStatusEnum.active,
+                source=reading.source,
+                telemetry_reading_id=reading.id
+            )
+            db.add(alert)
+            await db.flush()
+            log.info("telemetry.alert_triggered", alert_id=alert.id, type=alert_type)
+            
+            # Broadcast WebSocket alert
+            try:
+                from apps.api.websocket_manager import broadcast_alert
+                await broadcast_alert(alert)
+            except Exception as e:
+                log.warning("ws.broadcast_alert.failed", error=str(e))
+
+
 @router.post("/ingest", response_model=TelemetryIngestResponse, summary="Ingest IoT telemetry")
 async def ingest_telemetry(
     payload: TelemetryIngestPayload,
@@ -112,14 +176,50 @@ async def ingest_telemetry(
     # --- Verify sensor exists ---
     sensor = await db.get(SensorNode, payload.sensor_id)
     if sensor is None:
-        raise HTTPException(status_code=404, detail=f"Sensor '{payload.sensor_id}' not registered")
+        from apps.api.config import get_settings
+        settings = get_settings()
+        if settings.app_env == "development" and payload.sensor_id != "UNKNOWN" and not payload.sensor_id.startswith("test"):
+            sensor = SensorNode(
+                sensor_id=payload.sensor_id,
+                name=f"Auto Buoy {payload.sensor_id}",
+                status=SensorStatusEnum.normal,
+                battery_voltage=payload.battery_voltage,
+                rssi=payload.rssi,
+                snr=payload.snr,
+                is_active=True,
+            )
+            db.add(sensor)
+            await db.flush()
+            log.info("telemetry.ingest.auto_register", sensor_id=payload.sensor_id)
+        else:
+            raise HTTPException(status_code=404, detail=f"Sensor '{payload.sensor_id}' not registered")
 
     # --- Payload hash for dedup ---
-    raw_dict = payload.model_dump(mode="python")
+    raw_dict = payload.model_dump(mode="json")
     payload_hash = _compute_payload_hash(raw_dict)
 
-    # --- Quality flag ---
+    # --- Quality flag & Sequence validation ---
     quality_flag = _assign_quality_flag(payload)
+
+    # 1. Clock skew / Stale timestamp detection
+    server_now = datetime.now(timezone.utc)
+    payload_ts = payload.timestamp.replace(tzinfo=timezone.utc) if payload.timestamp.tzinfo is None else payload.timestamp
+    time_diff = abs((server_now - payload_ts).total_seconds())
+    if time_diff > 86400:  # More than 24 hours skew
+        quality_flag = QualityFlagEnum.suspect
+        log.warning("telemetry.ingest.clock_skew", sensor_id=payload.sensor_id, ts=payload.timestamp, time_diff=time_diff)
+
+    # 2. Out-of-order and packet loss detection
+    stmt_seq = select(TelemetryReading.sequence_no).where(TelemetryReading.sensor_id == payload.sensor_id).order_by(TelemetryReading.timestamp.desc()).limit(1)
+    res_seq = await db.execute(stmt_seq)
+    last_seq = res_seq.scalar_one_or_none()
+    if last_seq is not None:
+        if payload.sequence_no < last_seq:
+            quality_flag = QualityFlagEnum.suspect
+            log.warning("telemetry.ingest.out_of_order", sensor_id=payload.sensor_id, seq=payload.sequence_no, last_seq=last_seq)
+        elif payload.sequence_no > last_seq + 1:
+            missing_count = payload.sequence_no - last_seq - 1
+            log.warning("telemetry.ingest.packet_loss", sensor_id=payload.sensor_id, missing_count=missing_count, last_seq=last_seq, current_seq=payload.sequence_no)
 
     # --- Build ORM object ---
     reading = TelemetryReading(
@@ -247,6 +347,9 @@ async def ingest_telemetry(
         sensor.status = SensorStatusEnum.warning
     else:
         sensor.status = SensorStatusEnum.normal
+
+    # --- Alert processing ---
+    await _process_alerts_for_reading(reading, db)
 
     # --- Audit log ---
     audit = AuditLog(

@@ -89,3 +89,28 @@ C:\Users\elang\miniconda3\envs\dgpu-core\python.exe run_pipeline.py
 
 > [!IMPORTANT]
 > **River Surface Area**: Centerline vector layers represent the 1D flow path and have no polygon area (`line_perimeter_km` is equivalent to length). River surface area (`river_surface_area_km2`) and perimeter (`river_surface_perimeter_km`) are calculated only for rivers where physical water-surface polygons are mapped (Cauvery, Palar, Vellar, Amaravati, and South Pennar). For other rivers, these values are set to `null` to comply with spatial source integrity.
+
+---
+
+## 📦 Data and Large Files
+
+This project uses Git LFS (for files between 10 MB and 100 MB) and DVC (for datasets and models > 100 MB).
+
+### Setup for New Developers
+1. **Initialize Git Guard & LFS**:
+   ```powershell
+   .\scripts\setup-git.ps1
+   ```
+2. **Initialize DVC Remotes**:
+   ```powershell
+   .\scripts\setup-dvc.ps1
+   ```
+3. **Pull Remote Data**:
+   ```powershell
+   .\scripts\pull-data.ps1
+   ```
+4. **Verify Data Integrity**:
+   ```powershell
+   .\scripts\verify-data.ps1
+   ```
+
