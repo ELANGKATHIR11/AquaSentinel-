@@ -7,6 +7,8 @@ import { z } from 'zod';
 
 export const TelemetrySchema = z.object({
   sensor_id: z.string().min(1, 'Sensor ID is required'),
+  gateway_id: z.string().optional(),
+  sequence_no: z.number().int().optional(),
   timestamp: z.string().datetime({ message: 'Must be a valid ISO-8601 UTC timestamp' }),
   latitude: z.number().min(-90).max(90, 'Latitude must be between -90 and 90'),
   longitude: z.number().min(-180).max(180, 'Longitude must be between -180 and 180'),
@@ -17,13 +19,16 @@ export const TelemetrySchema = z.object({
   tilt_deg: z.number().min(0, 'Tilt must be positive').max(180, 'Tilt cannot exceed 180 degrees'),
   turbulence_index: z.number().min(0).max(1.0, 'Turbulence must be between 0.0 and 1.0'),
   battery_voltage: z.number().min(0, 'Battery must be positive').max(6.0, 'Battery cannot exceed 6.0 V'),
+  solar_voltage: z.number().min(0).max(10.0).optional(),
   rssi: z.number().min(-150, 'RSSI too low').max(0, 'RSSI cannot exceed 0 dBm'),
   snr: z.number().min(-50).max(50, 'SNR too extreme'),
-  fish_activity_index: z.number().min(0.0).max(1.0, 'Fish activity must be between 0.0 and 1.0'),
+  fish_activity_index: z.number().min(0.0).max(1.0, 'Fish activity must be between 0.0 and 1.0').optional(),
   water_health_score: z.number().int().min(0).max(100),
   flood_risk_score: z.number().min(0.0).max(1.0),
   pollution_anomaly_score: z.number().min(0.0).max(1.0),
-  source: z.enum(['iot', 'manual', 'simulation']),
+  model_version: z.string().optional(),
+  quality_flag: z.enum(['good', 'suspect', 'bad', 'missing']).optional(),
+  source: z.enum(['iot', 'manual', 'simulation', 'import', 'cached', 'offline']),
   notes: z.string().optional(),
 });
 
@@ -31,8 +36,8 @@ export const ManualInputFormSchema = z.object({
   sensor_id: z.string().min(1, 'Please select or enter a Sensor ID'),
   isNewSensor: z.boolean().default(false),
   custom_sensor_name: z.string().optional(),
-  latitude: z.coerce.number().min(12.0, 'Must be within Chennai focus (lat >= 12.0)').max(14.0, 'Must be within Chennai focus (lat <= 14.0)'),
-  longitude: z.coerce.number().min(79.5, 'Must be within Chennai focus (lng >= 79.5)').max(81.0, 'Must be within Chennai focus (lng <= 81.0)'),
+  latitude: z.coerce.number().min(8.0, 'Must be within Tamil Nadu (lat >= 8.0)').max(14.0, 'Must be within Tamil Nadu (lat <= 14.0)'),
+  longitude: z.coerce.number().min(76.0, 'Must be within Tamil Nadu (lng >= 76.0)').max(81.0, 'Must be within Tamil Nadu (lng <= 81.0)'),
   water_level_cm: z.coerce.number().min(0, 'Must be >= 0').max(1000, 'Must be <= 1000'),
   ph: z.coerce.number().min(0, 'pH must be >= 0').max(14, 'pH must be <= 14'),
   turbidity_ntu: z.coerce.number().min(0, 'Turbidity must be >= 0').max(1000, 'Turbidity must be <= 1000'),
@@ -42,7 +47,7 @@ export const ManualInputFormSchema = z.object({
   battery_voltage: z.coerce.number().min(2.5, 'Must be >= 2.5V').max(5.0, 'Must be <= 5.0V'),
   rssi: z.coerce.number().min(-140, 'Must be >= -140 dBm').max(0, 'Must be <= 0 dBm'),
   snr: z.coerce.number().min(-25, 'Must be >= -25').max(20, 'Must be <= 20'),
-  fish_activity_index: z.coerce.number().min(0, 'Must be >= 0').max(1, 'Must be <= 1'),
+  fish_activity_index: z.coerce.number().min(0, 'Must be >= 0').max(1, 'Must be <= 1').optional(),
   notes: z.string().max(300, 'Notes must be within 300 characters').optional(),
 });
 

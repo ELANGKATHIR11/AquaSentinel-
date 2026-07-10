@@ -176,10 +176,10 @@ export const INITIAL_ALERTS: Alert[] = [
     severity: 'critical',
     type: 'pollution',
     summary: 'Severe pH drop detected. Current pH 5.1 indicates strong acidic discharge pollution anomaly.',
-    notes: 'Informed water board. Upstream inspection underway.',
+    notes: 'Water board notified. Upstream inspection pending. [DEMO DATA]',
     status: 'active',
-    assignedTo: 'Engineer Ram',
-    source: 'iot',
+    assignedTo: 'Demo Operator A',
+    source: 'simulation',
   },
   {
     id: 'alt_002',
@@ -188,10 +188,10 @@ export const INITIAL_ALERTS: Alert[] = [
     severity: 'high',
     type: 'flood',
     summary: 'Water level exceeded high flood threshold: 340.0 cm. Spillage estimates rising.',
-    notes: 'Reservoir spillway gate 2 opened 0.5 meters. Alerting downstream villages.',
+    notes: 'Spillway gate simulation active. Downstream alerts configured. [DEMO DATA]',
     status: 'acknowledged',
-    assignedTo: 'Operator Lakshmi',
-    source: 'iot',
+    assignedTo: 'Demo Operator B',
+    source: 'simulation',
   },
   {
     id: 'alt_003',
@@ -201,7 +201,7 @@ export const INITIAL_ALERTS: Alert[] = [
     type: 'flood',
     summary: 'Moderate water rise detected (190.5 cm). Heavy rain runoff contributing.',
     status: 'active',
-    source: 'iot',
+    source: 'simulation',
   },
   {
     id: 'alt_004',
@@ -211,8 +211,8 @@ export const INITIAL_ALERTS: Alert[] = [
     type: 'device-health',
     summary: 'Device battery critical (3.21 V). LoRa RSSI degraded to -121 dBm. Node might offline.',
     status: 'resolved',
-    notes: 'Auto-resolved. Node went completely offline.',
-    source: 'iot',
+    notes: 'Auto-resolved. Node went completely offline. [DEMO DATA]',
+    source: 'simulation',
   },
 ];
 
@@ -224,7 +224,7 @@ export const INITIAL_CALIBRATION_PROFILES: CalibrationProfile[] = [
     turbidity_zero_offset: 0.35,
     water_level_offset_cm: -2.5,
     last_calibrated: new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString(),
-    operator: 'Tech Vignesh',
+    operator: 'Demo Field Tech',
     validity_status: 'valid',
   },
   {
@@ -234,7 +234,7 @@ export const INITIAL_CALIBRATION_PROFILES: CalibrationProfile[] = [
     turbidity_zero_offset: 0.12,
     water_level_offset_cm: 0.0,
     last_calibrated: new Date(Date.now() - 5 * 24 * 3600 * 1000).toISOString(),
-    operator: 'Operator Lakshmi',
+    operator: 'Demo Operator',
     validity_status: 'valid',
   },
   {
@@ -244,7 +244,7 @@ export const INITIAL_CALIBRATION_PROFILES: CalibrationProfile[] = [
     turbidity_zero_offset: 0.84,
     water_level_offset_cm: 10.5,
     last_calibrated: new Date(Date.now() - 85 * 24 * 3600 * 1000).toISOString(),
-    operator: 'Tech Vignesh',
+    operator: 'Demo Field Tech',
     validity_status: 'requires_attention',
   },
   {
@@ -264,7 +264,7 @@ export const INITIAL_CALIBRATION_PROFILES: CalibrationProfile[] = [
     turbidity_zero_offset: 0.44,
     water_level_offset_cm: 1.2,
     last_calibrated: new Date(Date.now() - 15 * 24 * 3600 * 1000).toISOString(),
-    operator: 'Operator Lakshmi',
+    operator: 'Demo Operator',
     validity_status: 'valid',
   },
 ];
@@ -277,8 +277,8 @@ export const INITIAL_CALIBRATION_HISTORY: CalibrationHistoryEntry[] = [
     ph_offset: 0.12,
     turbidity_zero_offset: 0.35,
     water_level_offset_cm: -2.5,
-    operator: 'Tech Vignesh',
-    status: 'Completed',
+    operator: 'Demo Field Tech',
+    status: 'Completed (Demo)',
   },
   {
     id: 'cal_002',
@@ -287,8 +287,8 @@ export const INITIAL_CALIBRATION_HISTORY: CalibrationHistoryEntry[] = [
     ph_offset: -0.05,
     turbidity_zero_offset: 0.12,
     water_level_offset_cm: 0.0,
-    operator: 'Operator Lakshmi',
-    status: 'Completed',
+    operator: 'Demo Operator',
+    status: 'Completed (Demo)',
   },
 ];
 

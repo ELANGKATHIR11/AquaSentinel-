@@ -1,0 +1,26 @@
+{
+  "description": "IsolationForest unsupervised anomaly detector for pollution events",
+  "label": "PROTOTYPE | IsolationForest | Not validated for operational pollution decisions",
+  "features": [
+    "ph",
+    "turbidity_ntu",
+    "temperature_c",
+    "turbulence_index",
+    "turbidity_baseline_deviation",
+    "ph_rate_of_change_1h"
+  ],
+  "output": "anomaly score 0.0-1.0 (higher = more anomalous)",
+  "disclaimer": "PROTOTYPE. Synthetic training data. NOT validated on real pollution events. Do NOT use for regulatory or public health decisions.",
+  "metrics": {
+    "clean_mean_score": 0.173,
+    "polluted_mean_score": 0.9387,
+    "score_separation": 0.7657,
+    "n_estimators": 200,
+    "contamination": 0.05,
+    "training_data": "SYNTHETIC \u2014 not real pollution events"
+  },
+  "trained_at": "2026-07-10T04:21:56.806027+00:00",
+  "model_name": "pollution_anomaly_if",
+  "version": "v1.0-prototype",
+  "saved_at": "2026-07-10T04:21:56.869860+00:00"
+}

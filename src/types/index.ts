@@ -6,11 +6,13 @@
 export type SeverityType = 'low' | 'moderate' | 'high' | 'critical';
 export type AlertType = 'flood' | 'pollution' | 'device-health' | 'tamper' | 'gateway' | 'calibration';
 export type AlertStatus = 'active' | 'acknowledged' | 'resolved';
-export type DataSource = 'iot' | 'manual' | 'simulation' | 'cached' | 'offline';
+export type DataSource = 'iot' | 'manual' | 'simulation' | 'import' | 'cached' | 'offline';
 export type ConnectionStatus = 'connected' | 'reconnecting' | 'degraded' | 'offline';
 
 export interface Telemetry {
   sensor_id: string;
+  gateway_id?: string;
+  sequence_no?: number;
   timestamp: string; // ISO-8601 UTC
   latitude: number;
   longitude: number;
@@ -21,19 +23,24 @@ export interface Telemetry {
   tilt_deg: number;
   turbulence_index: number;
   battery_voltage: number;
+  solar_voltage?: number;
   rssi: number;
   snr: number;
-  fish_activity_index: number;
-  water_health_score: number; // 0-100
-  flood_risk_score: number; // 0.0 - 1.0
-  pollution_anomaly_score: number; // 0.0 - 1.0
-  source: 'iot' | 'manual' | 'simulation';
+  fish_activity_index?: number;
+  water_health_score: number; // 0-100, transparent formula — NOT official WQI
+  flood_risk_score: number; // 0.0 - 1.0, RandomForest prototype model
+  pollution_anomaly_score: number; // 0.0 - 1.0, IsolationForest prototype model
+  model_version?: string; // e.g. "flood-rf-v1.0"
+  quality_flag?: 'good' | 'suspect' | 'bad' | 'missing';
+  source: DataSource;
   notes?: string;
 }
 
 export interface Sensor {
   sensor_id: string;
   name: string;
+  site_id?: string;
+  gateway_id?: string;
   status: 'normal' | 'warning' | 'high_risk' | 'critical' | 'offline';
   last_seen: string;
   latitude: number;
@@ -44,7 +51,8 @@ export interface Sensor {
   water_health_score: number;
   flood_risk_score: number;
   pollution_anomaly_score: number;
-  source: 'iot' | 'manual' | 'simulation';
+  source: DataSource;
+  is_stale?: boolean; // true if last_seen > 15 min ago
 }
 
 export interface Alert {
@@ -57,7 +65,7 @@ export interface Alert {
   notes?: string;
   status: AlertStatus;
   assignedTo?: string;
-  source: 'iot' | 'manual' | 'simulation';
+  source: DataSource;
   telemetry_snapshot?: Telemetry;
 }
 

@@ -6,10 +6,10 @@
 import { Telemetry, Sensor, Alert, CalibrationProfile } from '../types';
 import { TelemetrySchema } from '../schemas';
 import { useDashboardStore } from '../stores/useDashboardStore';
+import { config } from '../config';
 
-// Retrieve backend environments with standard defaults
-export const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || '/api/v1';
-export const WS_BASE_URL = (import.meta as any).env?.VITE_WS_URL || `ws://${window.location.host}/ws`;
+export const API_BASE_URL = config.apiBaseUrl;
+export const WS_BASE_URL = config.wsUrl;
 
 class ApiService {
   private ws: WebSocket | null = null;

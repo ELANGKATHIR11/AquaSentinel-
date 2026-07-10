@@ -134,8 +134,8 @@ const NavigationLayout: React.FC<{ children: React.ReactNode }> = ({ children })
           {/* Duty Officer identifier */}
           <div className="flex items-center gap-3 pl-6 border-l border-slate-800">
             <div className="text-right">
-              <p className="text-[10px] uppercase tracking-widest leading-none text-slate-500">Duty Officer</p>
-              <p className="text-xs font-mono text-slate-300">Subramanian L.</p>
+              <p className="text-[10px] uppercase tracking-widest leading-none text-slate-500">Operator</p>
+              <p className="text-xs font-mono text-slate-300">{mockMode ? 'Demo Mode' : 'Signed Out'}</p>
             </div>
             <div className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center">
               <User className="w-5 h-5 text-slate-400" />
@@ -177,8 +177,16 @@ const NavigationLayout: React.FC<{ children: React.ReactNode }> = ({ children })
             <div className="bg-slate-800/50 p-3 rounded-lg border border-slate-700">
               <p className="text-[10px] text-slate-500 mb-1 uppercase font-bold">System Status</p>
               <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-300">Gateway 04</span>
-                <span className="text-[10px] px-1.5 bg-emerald-500/20 text-emerald-400 rounded">STABLE</span>
+                <span className="text-xs text-slate-300">
+                  {mockMode ? 'Offline Demo' : connectionStatus === 'connected' ? 'API Connected' : 'Connecting...'}
+                </span>
+                <span className={`text-[10px] px-1.5 rounded ${
+                  mockMode ? 'bg-amber-500/20 text-amber-400' :
+                  connectionStatus === 'connected' ? 'bg-emerald-500/20 text-emerald-400' :
+                  'bg-rose-500/20 text-rose-400'
+                }`}>
+                  {mockMode ? 'DEMO' : connectionStatus === 'connected' ? 'LIVE' : 'OFFLINE'}
+                </span>
               </div>
             </div>
           </div>

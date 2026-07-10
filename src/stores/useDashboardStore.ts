@@ -6,6 +6,7 @@
 import { create } from 'zustand';
 import { Sensor, Telemetry, Alert, CalibrationProfile, CalibrationHistoryEntry, SimulationScenario, ConnectionStatus } from '../types';
 import { INITIAL_SENSORS, INITIAL_TELEMETRY, INITIAL_ALERTS, INITIAL_CALIBRATION_PROFILES, INITIAL_CALIBRATION_HISTORY, INITIAL_SCENARIOS, generateRealisticSample } from '../utils/mockData';
+import { config } from '../config';
 
 interface DashboardState {
   theme: 'light' | 'dark';
@@ -52,7 +53,8 @@ interface DashboardState {
 export const useDashboardStore = create<DashboardState>((set, get) => ({
   theme: 'dark',
   connectionStatus: 'connected',
-  mockMode: true, // starts with mockMode since we're in offline-first demonstration view
+  // mockMode is controlled by VITE_MOCK_MODE env var; defaults to true (offline-safe)
+  mockMode: config.mockMode,
   selectedSensorId: null,
   selectedSiteId: 'all',
   sensors: INITIAL_SENSORS,
@@ -208,12 +210,20 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     get().addTelemetry(updatedTel);
   },
 
-  acknowledgeAlert: (id, operatorName = 'Operator') => set((state) => ({
-    alerts: state.alerts.map((a) => a.id === id ? { ...a, status: 'acknowledged', notes: `${a.notes ? a.notes + ' ' : ''}Acknowledged by ${operatorName}.` } : a)
+  acknowledgeAlert: (id, operatorName) => set((state) => ({
+    alerts: state.alerts.map((a) => a.id === id ? { 
+      ...a, 
+      status: 'acknowledged', 
+      notes: `${a.notes ? a.notes + ' ' : ''}Acknowledged${operatorName ? ` by ${operatorName}` : ''}.` 
+    } : a)
   })),
 
-  resolveAlert: (id, notes = 'Resolved by operator.') => set((state) => ({
-    alerts: state.alerts.map((a) => a.id === id ? { ...a, status: 'resolved', notes: `${a.notes ? a.notes + ' ' : ''}Resolved: ${notes}` } : a)
+  resolveAlert: (id, notes) => set((state) => ({
+    alerts: state.alerts.map((a) => a.id === id ? { 
+      ...a, 
+      status: 'resolved', 
+      notes: `${a.notes ? a.notes + ' ' : ''}Resolved${notes ? ': ' + notes : '.'}`
+    } : a)
   })),
 
   assignAlert: (id, assignee) => set((state) => ({

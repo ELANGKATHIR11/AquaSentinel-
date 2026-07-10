@@ -1,0 +1,1 @@
+"""AquaSentinel apps package."""

@@ -1,0 +1,35 @@
+{
+  "description": "RandomForest binary classifier for flood risk detection",
+  "label": "PROTOTYPE | RandomForest | Not validated for operational flood decisions",
+  "features": [
+    "water_level_cm",
+    "ph",
+    "turbidity_ntu",
+    "temperature_c",
+    "tilt_deg",
+    "turbulence_index",
+    "battery_voltage",
+    "rssi",
+    "snr",
+    "water_level_slope_1h",
+    "water_level_rolling_max_6h",
+    "turbidity_baseline_deviation",
+    "ph_rate_of_change_1h",
+    "hour_of_day",
+    "is_monsoon"
+  ],
+  "output": "probability score 0.0-1.0 (higher = more flood risk)",
+  "disclaimer": "PROTOTYPE. Synthetic training data only. NOT validated for operational flood decisions. Always follow official CWC/IMD bulletins.",
+  "metrics": {
+    "accuracy": 1.0,
+    "auc_roc": 1.0,
+    "n_estimators": 150,
+    "train_samples": 2400,
+    "test_samples": 600,
+    "training_data": "SYNTHETIC \u2014 not real historical observations"
+  },
+  "trained_at": "2026-07-10T04:21:56.524146+00:00",
+  "model_name": "flood_risk_rf",
+  "version": "v1.0-prototype",
+  "saved_at": "2026-07-10T04:21:56.616367+00:00"
+}
