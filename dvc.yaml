@@ -1,9 +1,9 @@
 # DVC pipeline stages for AquaSentinel ML workflows
 stages:
   prepare_data:
-    cmd: python run_pipeline.py
+    cmd: python pipelines/run_pipeline.py
     deps:
-      - run_pipeline.py
+      - pipelines/run_pipeline.py
       - data/raw/sources.json
     params:
       - prepare.test_split

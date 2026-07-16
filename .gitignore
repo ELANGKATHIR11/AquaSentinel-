@@ -83,3 +83,9 @@ assets/maps-master/
 !data/README.md
 !data/manifest.csv
 !data/manifest.schema.json
+
+# IDE/Tooling Caches
+.vite/
+.pio/
+.device-dashboard.code-workspace
+**/node_modules/

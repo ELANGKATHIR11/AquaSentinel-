@@ -22,8 +22,8 @@ class Settings(BaseSettings):
     )
 
     # --- Database ---
-    database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/aquasentinel"
-    database_url_sync: str = "postgresql+psycopg://postgres:postgres@localhost:5432/aquasentinel"
+    database_url: str = "sqlite+aiosqlite:///aquasentinel.db"
+    database_url_sync: str = "sqlite:///aquasentinel.db"
 
     # --- Security ---
     secret_key: str = "dev_secret_change_in_production"

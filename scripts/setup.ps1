@@ -25,7 +25,9 @@ Write-Host "[OK] Python dependencies installed" -ForegroundColor Green
 # 3. Install npm packages
 Write-Host "`n--- Node.js dependencies ---" -ForegroundColor Cyan
 node --version
+Set-Location apps/web
 npm install
+Set-Location $rootDir
 Write-Host "[OK] npm packages installed" -ForegroundColor Green
 
 # 4. Seed database

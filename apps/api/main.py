@@ -24,7 +24,7 @@ from apps.api.config import get_settings
 from apps.api.database import close_engine, get_engine
 from apps.api.logging_config import configure_logging
 from apps.api.mqtt_client import get_mqtt_client
-from apps.api.routers import alerts, auth, gis, health, ml, sensors, telemetry, commands
+from apps.api.routers import aquasentinel_router
 from apps.api.websocket_manager import get_ws_manager
 
 settings = get_settings()
@@ -40,14 +40,13 @@ log = structlog.get_logger(__name__)
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     log.info("aquasentinel.startup", version=settings.app_version, env=settings.app_env)
 
-    # Verify DB connectivity on startup
+    # Verify DB connectivity and create tables on startup
     try:
-        from sqlalchemy import text
-        from apps.api.database import get_session_factory
-        factory = get_session_factory()
-        async with factory() as session:
-            await session.execute(text("SELECT 1"))
-        log.info("database.connected")
+        from apps.api.database import Base, get_engine
+        engine = get_engine()
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        log.info("database.connected_and_migrated")
     except Exception as exc:
         log.warning("database.connection_failed", error=str(exc))
         # Don't crash — allow health checks to report DB down
@@ -142,14 +141,7 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
 # Routers
 # ---------------------------------------------------------------------------
 
-app.include_router(health.router)
-app.include_router(auth.router, prefix="/api/v1")
-app.include_router(sensors.router, prefix="/api/v1")
-app.include_router(telemetry.router, prefix="/api/v1")
-app.include_router(alerts.router, prefix="/api/v1")
-app.include_router(gis.router, prefix="/api/v1")
-app.include_router(ml.router, prefix="/api/v1")
-app.include_router(commands.router, prefix="/api/v1")
+app.include_router(aquasentinel_router.router)
 
 
 # ---------------------------------------------------------------------------
@@ -197,6 +189,11 @@ async def ws_dashboard(websocket: WebSocket) -> None:
         except Exception:
             await websocket.close(code=4003)
             return
+    await ws_manager.handle_dashboard_ws(websocket)
+
+
+@app.websocket("/ws")
+async def ws_catch_all(websocket: WebSocket) -> None:
     await ws_manager.handle_dashboard_ws(websocket)
 
 

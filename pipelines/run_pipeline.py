@@ -33,7 +33,8 @@ def run_script(script_name):
     logging.info(f"Running script: {script_name}...")
     logging.info(f"==================================================")
     
-    result = subprocess.run([PYTHON_EXE, script_name], capture_output=True, text=True, encoding='utf-8')
+    script_path = os.path.join(os.path.dirname(__file__), script_name)
+    result = subprocess.run([PYTHON_EXE, script_path], capture_output=True, text=True, encoding='utf-8')
     
     # Write outputs to log file
     if result.stdout:

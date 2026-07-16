@@ -138,7 +138,7 @@ class ApiService {
       const res = await fetch(`${API_BASE_URL}/calibration`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sensor_id: sensorId, ...profile }),
+        body: JSON.stringify({ ...profile, sensor_id: sensorId }),
       });
       if (!res.ok) throw new Error('Calibration submit failed');
       const returned = await res.json();
