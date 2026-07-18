@@ -51,6 +51,7 @@ class TelemetryIngestPayload(BaseModel):
     rssi: int = Field(..., ge=-150, le=0)
     snr: float = Field(..., ge=-50, le=50)
     fish_activity_index: float | None = Field(None, ge=0, le=1)
+    water_flow: float = Field(default=0.0, ge=0.0)
     source: str = Field(default="iot")
     notes: str | None = None
 
@@ -80,6 +81,7 @@ class TelemetryResponse(BaseModel):
     turbidity_ntu: float
     temperature_c: float
     tilt_deg: float
+    water_flow: float
     turbulence_index: float
     battery_voltage: float
     solar_voltage: float | None

@@ -97,6 +97,7 @@ def _generate_payload(sensor_id: str) -> dict[str, Any]:
     rssi = base["rssi"] + random.randint(-4, 4)
     snr = base["snr"] + random.gauss(0, 1.2)
     fish_idx = round(max(0.0, min(1.0, 0.5 + 0.2 * math.sin(t / 3) + random.gauss(0, 0.05))), 2)
+    water_flow = max(0.0, 25.0 + 10 * math.sin(t * 1.5) + random.gauss(0, 3.0))
 
     _sequence_counters[sensor_id] += 1
 
@@ -118,6 +119,7 @@ def _generate_payload(sensor_id: str) -> dict[str, Any]:
         "rssi": rssi,
         "snr": round(snr, 1),
         "fish_activity_index": fish_idx,
+        "water_flow": round(water_flow, 1),
         "source": "simulation",
     }
 
@@ -149,20 +151,38 @@ def run_simulator(
                     print(f"  WARNING: Unknown sensor_id '{sensor_id}', skipping")
                     continue
 
-                payload = _generate_payload(sensor_id)
+                raw_payload = _generate_payload(sensor_id)
+                api_payload = {
+                    "temp": raw_payload["temperature_c"],
+                    "turbidity": raw_payload["turbidity_ntu"],
+                    "waterLevel": raw_payload["water_level_cm"],
+                    "rain": float(random.uniform(0.0, 55.0)) if random.random() > 0.85 else 0.0,
+                    "pitch": raw_payload["tilt_deg"],
+                    "roll": float(random.uniform(-1.0, 1.0)),
+                    "ax": 0.0,
+                    "ay": 0.0,
+                    "az": 1.0,
+                    "ph": raw_payload["ph"],
+                    "tds": float(random.uniform(150.0, 300.0)),
+                    "pressure": 1013.25,
+                    "lat": raw_payload["latitude"],
+                    "lon": raw_payload["longitude"],
+                    "timestamp": raw_payload["timestamp"],
+                    "device_id": raw_payload["sensor_id"],
+                    "water_flow": raw_payload["water_flow"]
+                }
 
                 try:
                     resp = client.post(
-                        f"{api_url}/api/v1/telemetry/ingest",
-                        json=payload,
-                        headers={"X-Gateway-Id": payload["gateway_id"]},
+                        f"{api_url}/api/sensor",
+                        json=api_payload,
                     )
                     if resp.status_code == 200:
                         data = resp.json()
                         if verbose:
-                            print(f"  [{sensor_id}] seq={payload['sequence_no']} "
-                                  f"wl={payload['water_level_cm']}cm "
-                                  f"ph={payload['ph']} → {data['status']}")
+                            print(f"  [{sensor_id}] seq={raw_payload['sequence_no']} "
+                                  f"wl={api_payload['waterLevel']}cm "
+                                  f"ph={api_payload['ph']} → WQI: {data.get('wqi')}, Flood Risk: {data.get('flood_risk', {}).get('risk_level')}")
                     else:
                         print(f"  [{sensor_id}] HTTP {resp.status_code}: {resp.text[:100]}")
                 except httpx.ConnectError:

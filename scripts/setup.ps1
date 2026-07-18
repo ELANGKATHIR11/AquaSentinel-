@@ -3,7 +3,7 @@
 # Run this once after cloning the repository.
 # Usage: .\scripts\setup.ps1
 
-$rootDir = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+$rootDir = Split-Path -Parent $PSScriptRoot
 Set-Location $rootDir
 
 Write-Host "=== AquaSentinel Platform Setup ===" -ForegroundColor Cyan

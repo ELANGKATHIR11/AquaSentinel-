@@ -4,7 +4,7 @@
 
 param([int]$Port = 3000)
 
-$rootDir = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+$rootDir = Split-Path -Parent $PSScriptRoot
 Set-Location $rootDir
 
 Write-Host "=== AquaSentinel Web Dashboard ===" -ForegroundColor Cyan

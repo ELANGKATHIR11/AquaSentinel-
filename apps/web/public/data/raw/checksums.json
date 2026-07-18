@@ -1,0 +1,38 @@
+{
+  "hydrorivers_asia": {
+    "file": "HydroRIVERS_v10_as_shp.zip",
+    "sha256": "29780b0a75f90024f22e7e2029e5e3045f7325cda0528db65c5cc4c864b98525"
+  },
+  "dem_c43": {
+    "file": "C43.zip",
+    "sha256": "00514aaa8facabb724806d00beebd89ad1eb272df1e652991003ec4750a5bc8d"
+  },
+  "dem_c44": {
+    "file": "C44.zip",
+    "sha256": "968d4119764049f98611c11f939b6fbc584e9b6309e2499c98062971b65a8f8b"
+  },
+  "dem_d43": {
+    "file": "D43.zip",
+    "sha256": "cbd98cccad47800e91d7e5988ab4ece80d9a34cab5dfe3bfd7511bea44ebbb3f"
+  },
+  "dem_d44": {
+    "file": "D44.zip",
+    "sha256": "54ea886312751b9828562da21d4482e4e691bb6dee6fdea4fbe8cb6a5d803b30"
+  },
+  "tamil_nadu_boundary": {
+    "file": "tamil_nadu_boundary.json",
+    "sha256": "d6da4b18a2fdcca421f6d01b16ed1c59ffac919ccd291146c9d85b949ab7451a"
+  },
+  "tamil_nadu_districts": {
+    "file": "tamil_nadu_districts.json",
+    "sha256": "12adc573f174ee1a6de442c61ebafd52936d04b19498131732bb85e475d3e3a5"
+  },
+  "tamil_nadu_rivers_osm": {
+    "file": "tamil_nadu_rivers_osm.json",
+    "sha256": "62783909b0497f35a77fc607427c4cb0a87aefebab90e370e5ba97522274529a"
+  },
+  "tamil_nadu_river_surfaces_osm": {
+    "file": "tamil_nadu_river_surfaces_osm.json",
+    "sha256": "0aa4edc4b4f11427d7ed9859bf6f646a39158abbdb41d43c497191c43514885e"
+  }
+}

@@ -21,7 +21,7 @@ from apps.api.main import app
 # In-memory SQLite engine for testing
 # ---------------------------------------------------------------------------
 
-TEST_DB_URL = "postgresql+asyncpg://postgres:Akilaarasu1!@localhost:5432/aquasentinel_test"
+TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 
 
 @pytest.fixture(scope="session")

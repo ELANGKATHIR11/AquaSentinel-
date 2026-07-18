@@ -23,6 +23,38 @@ def main():
             "description": "Global vectorized line network representing river reaches for Asia.",
             "type": "zip_shapefile"
         },
+        "dem_c43": {
+            "name": "Viewfinder Panoramas DEM C43",
+            "url": "https://viewfinderpanoramas.org/dem3/C43.zip",
+            "license": "Public Domain (Jonathan de Ferranti)",
+            "publisher": "Viewfinder Panoramas",
+            "description": "3 arc-second DEM for grid C43 (covers southwest Tamil Nadu).",
+            "type": "zip_dem"
+        },
+        "dem_c44": {
+            "name": "Viewfinder Panoramas DEM C44",
+            "url": "https://viewfinderpanoramas.org/dem3/C44.zip",
+            "license": "Public Domain (Jonathan de Ferranti)",
+            "publisher": "Viewfinder Panoramas",
+            "description": "3 arc-second DEM for grid C44 (covers southeast Tamil Nadu).",
+            "type": "zip_dem"
+        },
+        "dem_d43": {
+            "name": "Viewfinder Panoramas DEM D43",
+            "url": "https://viewfinderpanoramas.org/dem3/D43.zip",
+            "license": "Public Domain (Jonathan de Ferranti)",
+            "publisher": "Viewfinder Panoramas",
+            "description": "3 arc-second DEM for grid D43 (covers northwest Tamil Nadu).",
+            "type": "zip_dem"
+        },
+        "dem_d44": {
+            "name": "Viewfinder Panoramas DEM D44",
+            "url": "https://viewfinderpanoramas.org/dem3/D44.zip",
+            "license": "Public Domain (Jonathan de Ferranti)",
+            "publisher": "Viewfinder Panoramas",
+            "description": "3 arc-second DEM for grid D44 (covers northeast Tamil Nadu).",
+            "type": "zip_dem"
+        },
         "tamil_nadu_boundary": {
             "name": "Tamil Nadu State Boundary (OSM)",
             "url": "https://z.overpass-api.de/api/interpreter",

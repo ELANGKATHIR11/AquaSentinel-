@@ -58,6 +58,7 @@ def main():
     run_script("03_prepare_boundaries.py")
     run_script("04_extract_rivers.py")
     run_script("05_compute_metrics.py")
+    run_script("05_process_dem.py")
     run_script("06_validate_export.py")
     
     logging.info("Pipeline completed successfully! Check reports/ and logs/ for details.")

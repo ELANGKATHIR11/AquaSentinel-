@@ -8,7 +8,7 @@ param(
     [switch]$Production
 )
 
-$rootDir = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+$rootDir = Split-Path -Parent $PSScriptRoot
 Set-Location $rootDir
 
 Write-Host "=== AquaSentinel API Server ===" -ForegroundColor Cyan

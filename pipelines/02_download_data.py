@@ -82,7 +82,7 @@ def main():
     checksums_path = os.path.join("data", "raw", "checksums.json")
 
     for key, src in sources.items():
-        if src["type"] == "zip_shapefile":
+        if src["type"] in ["zip_shapefile", "zip_dem"]:
             filename = os.path.basename(src["url"])
             dest = os.path.join("data", "raw", filename)
             try:

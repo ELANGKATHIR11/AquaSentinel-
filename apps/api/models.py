@@ -15,7 +15,7 @@ class Device(Base):
     device_id: Mapped[str] = mapped_column(String(50), primary_key=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     status: Mapped[str] = mapped_column(String(20), default="online")  # online, offline
-    last_seen: Mapped[datetime.datetime | None] = mapped_column(DateTime, nullable=True)
+    last_seen: Mapped[datetime.datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     battery_level: Mapped[float] = mapped_column(Float, default=100.0)
     rssi: Mapped[float] = mapped_column(Float, default=0.0)
     ip_address: Mapped[str | None] = mapped_column(String(50), nullable=True)
@@ -45,7 +45,8 @@ class SensorData(Base):
     pressure: Mapped[float] = mapped_column(Float, default=0.0)
     lat: Mapped[float] = mapped_column(Float, default=0.0)
     lon: Mapped[float] = mapped_column(Float, default=0.0)
-    timestamp: Mapped[datetime.datetime] = mapped_column(DateTime, default=func.now())
+    water_flow: Mapped[float] = mapped_column(Float, default=0.0)
+    timestamp: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), default=func.now())
 
 
 class Alert(Base):
@@ -56,7 +57,7 @@ class Alert(Base):
     type: Mapped[str] = mapped_column(String(50))  # High Water Level, Rapid Rise, Heavy Rain, etc.
     severity: Mapped[str] = mapped_column(String(20))  # Low, Moderate, High, Critical
     message: Mapped[str] = mapped_column(Text)
-    timestamp: Mapped[datetime.datetime] = mapped_column(DateTime, default=func.now())
+    timestamp: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), default=func.now())
     resolved: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
@@ -64,7 +65,7 @@ class SystemLog(Base):
     __tablename__ = "system_logs"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    timestamp: Mapped[datetime.datetime] = mapped_column(DateTime, default=func.now())
+    timestamp: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), default=func.now())
     level: Mapped[str] = mapped_column(String(20))  # INFO, WARNING, ERROR, CRITICAL
     message: Mapped[str] = mapped_column(Text)
 
@@ -76,5 +77,5 @@ class SensorHealth(Base):
     device_id: Mapped[str] = mapped_column(String(50), default="ESP32_DevKitV1_01")
     sensor_name: Mapped[str] = mapped_column(String(50))  # DS18B20, TSW-20M, AJ-SR04M, MPU6050, Rain Sensor, pH Sensor, TDS Sensor, GPS
     status: Mapped[str] = mapped_column(String(20), default="normal")  # normal, fault, drift, degraded
-    last_checked: Mapped[datetime.datetime] = mapped_column(DateTime, default=func.now())
+    last_checked: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), default=func.now())
     error_count: Mapped[int] = mapped_column(Integer, default=0)

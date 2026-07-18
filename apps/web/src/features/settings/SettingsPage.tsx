@@ -154,6 +154,38 @@ export const SettingsPage: React.FC = () => {
             </form>
           </div>
 
+          {/* ThingSpeak Cloud Integration */}
+          <div className="bg-zinc-950 border border-zinc-900 rounded-lg p-5 shadow-lg flex flex-col gap-4">
+            <h3 className="text-xs font-bold uppercase text-zinc-100 font-sans border-b border-zinc-900 pb-3">
+              ThingSpeak IoT Cloud Integration
+            </h3>
+
+            <div className="flex flex-col gap-4">
+              <div>
+                <label className="text-[10px] text-zinc-500 block uppercase">ThingSpeak Write API Key</label>
+                <input
+                  type="text"
+                  value="I0FV9GHNVEEZ6YI8"
+                  disabled
+                  className="w-full mt-1.5 px-2.5 py-1.5 bg-zinc-900/50 border border-zinc-900/80 rounded text-zinc-500 cursor-not-allowed focus:outline-none"
+                />
+                <span className="text-[9px] text-zinc-600 block mt-1">Write API key configured for secure direct channel updates.</span>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-zinc-900/40 border border-zinc-900 rounded-lg">
+                <div>
+                  <span className="font-bold text-zinc-200 block text-xs">Cloud Synchronization State</span>
+                  <p className="text-[10px] text-zinc-500 mt-0.5 font-sans">
+                    Automatically syncs Temperature (Field 1), Turbidity (Field 2), Water Level (Field 3), and Water Flow (Field 4) to ThingSpeak.
+                  </p>
+                </div>
+                <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/35 rounded font-mono text-[10px] font-bold">
+                  CONNECTED
+                </span>
+              </div>
+            </div>
+          </div>
+
         </div>
 
         {/* Right Col: Diagnostics limits & Credentials */}

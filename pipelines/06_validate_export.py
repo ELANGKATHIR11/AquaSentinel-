@@ -50,7 +50,8 @@ def main():
         'source_lat', 'source_lon', 'mouth_lat', 'mouth_lon', 'centroid_lat', 'centroid_lon',
         'length_km', 'line_perimeter_km', 'basin_area_km2', 'river_surface_area_km2',
         'river_surface_perimeter_km', 'area_method', 'perimeter_method',
-        'geometry_validation_status', 'last_verified_date', 'notes'
+        'geometry_validation_status', 'last_verified_date', 'notes',
+        'source_elevation_m', 'mouth_elevation_m', 'elevation_drop_m', 'elevation_source'
     ]
     
     for f in expected_fields:
@@ -64,6 +65,10 @@ def main():
             validation_issues.append(f"Negative or zero length for {name}: {row['length_km']}")
         if row['basin_area_km2'] <= 0:
             validation_issues.append(f"Negative or zero basin area for {name}: {row['basin_area_km2']}")
+        if row['source_elevation_m'] < 0:
+            validation_issues.append(f"Negative source elevation for {name}: {row['source_elevation_m']}")
+        if row['mouth_elevation_m'] < 0:
+            validation_issues.append(f"Negative mouth elevation for {name}: {row['mouth_elevation_m']}")
             
     # 4. Outlier checks (length check against reasonable bounds, e.g. Kaveri should be >100km, others >20km)
     for idx, row in df.iterrows():
@@ -98,12 +103,12 @@ def main():
             
     report_content += """
 ## Metrics Quality Control Check
-| River Name | Length (km) | Basin Area (km²) | Surface Area (km²) | Districts Intersected | Centroid (Lat/Lon) |
-| --- | --- | --- | --- | --- | --- |
+| River Name | Length (km) | Basin Area (km²) | Surface Area (km²) | Source Elev (m) | Mouth Elev (m) | Drop (m) | Districts Intersected | Centroid (Lat/Lon) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
 """
     for idx, row in df.iterrows():
         surf_area = f"{row['river_surface_area_km2']:.3f}" if pd.notna(row['river_surface_area_km2']) else "N/A"
-        report_content += f"| {row['river_name']} | {row['length_km']:.1f} | {row['basin_area_km2']:.0f} | {surf_area} | {row['districts_intersected']} | {row['centroid_lat']:.4f}, {row['centroid_lon']:.4f} |\n"
+        report_content += f"| {row['river_name']} | {row['length_km']:.1f} | {row['basin_area_km2']:.0f} | {surf_area} | {row['source_elevation_m']:.1f} | {row['mouth_elevation_m']:.1f} | {row['elevation_drop_m']:.1f} | {row['districts_intersected']} | {row['centroid_lat']:.4f}, {row['centroid_lon']:.4f} |\n"
 
     report_content += "\n*Report generated automatically during QA stage.*\n"
     

@@ -154,7 +154,7 @@ def main():
     if surfaces is not None and not surfaces.empty:
         logging.info("Exporting processed surfaces...")
         # Merge attributes to surfaces
-        gdf_surfaces = surfaces.merge(df[['river_name', 'river_id', 'rank', 'source_dataset', 'source_license']], on='river_name')
+        gdf_surfaces = surfaces.merge(df[['river_name', 'river_id', 'rank', 'source_dataset', 'source_license', 'river_surface_area_km2', 'river_surface_perimeter_km']], on='river_name')
         gdf_surfaces.to_file(os.path.join("data", "processed", "tamil_nadu_top10_river_surfaces.geojson"), driver="GeoJSON")
         gdf_surfaces.to_file(os.path.join("data", "processed", "tamil_nadu_top10_river_surfaces.gpkg"), layer="surfaces", driver="GPKG")
         gdf_surfaces.to_file(os.path.join("data", "processed", "tamil_nadu_top10_river_surfaces.shp"), driver="ESRI Shapefile")

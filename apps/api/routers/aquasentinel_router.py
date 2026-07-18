@@ -12,8 +12,8 @@ Implements the specific requirements for:
 from __future__ import annotations
 
 import datetime
-from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query
+from typing import Optional, Literal
+from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from pydantic import BaseModel, Field
 from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -21,6 +21,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from apps.api.database import get_db_session
 from apps.api.models import SensorData, Alert, Device, SensorHealth, SystemLog
 from apps.api.ml.ai_engine import calculate_wqi, predict_flood_risk, detect_sensor_faults
+from apps.api.schemas import TelemetryIngestPayload
+from apps.api.thingspeak import send_to_thingspeak
 
 router = APIRouter(tags=["AquaSentinel Core"])
 
@@ -42,12 +44,17 @@ class SensorReadingPayload(BaseModel):
     lon: float = Field(..., description="Longitude")
     timestamp: Optional[str] = Field(None, description="ISO format timestamp")
     device_id: Optional[str] = Field("ESP32_DevKitV1_01", description="Device Identifier")
+    water_flow: Optional[float] = Field(0.0, description="Water flow rate in L/min")
 
 
 @router.post("/api/sensor")
-async def post_sensor_data(payload: SensorReadingPayload, db: AsyncSession = Depends(get_db_session)):
+async def post_sensor_data(
+    payload: SensorReadingPayload,
+    db: AsyncSession = Depends(get_db_session),
+    background_tasks: BackgroundTasks = None
+):
     # Parse timestamp
-    dt = datetime.datetime.now()
+    dt = datetime.datetime.now(datetime.timezone.utc)
     if payload.timestamp:
         try:
             # Handle ISO formats
@@ -102,6 +109,7 @@ async def post_sensor_data(payload: SensorReadingPayload, db: AsyncSession = Dep
         pressure=payload.pressure,
         lat=payload.lat,
         lon=payload.lon,
+        water_flow=payload.water_flow or 0.0,
         timestamp=dt
     )
     db.add(reading)
@@ -161,6 +169,16 @@ async def post_sensor_data(payload: SensorReadingPayload, db: AsyncSession = Dep
     db.add(sys_log)
 
     await db.commit()
+
+    # Trigger ThingSpeak integration if background_tasks is available
+    if background_tasks:
+        background_tasks.add_task(
+            send_to_thingspeak,
+            temperature=payload.temp,
+            turbidity=payload.turbidity,
+            water_level=payload.waterLevel,
+            water_flow=payload.water_flow or 0.0
+        )
 
     # Broadcast to WebSocket clients in real-time
     try:
@@ -413,6 +431,11 @@ async def get_v1_sensor(sensor_id: str, db: AsyncSession = Depends(get_db_sessio
 
 @router.get("/api/v1/sensors/{sensor_id}/telemetry")
 async def get_v1_sensor_telemetry(sensor_id: str, db: AsyncSession = Depends(get_db_session)):
+    stmt_dev = select(Device).where(Device.device_id == sensor_id)
+    res_dev = await db.execute(stmt_dev)
+    if not res_dev.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Sensor not found")
+
     stmt = select(SensorData).where(SensorData.device_id == sensor_id).order_by(desc(SensorData.timestamp)).limit(100)
     res = await db.execute(stmt)
     readings = res.scalars().all()
@@ -455,7 +478,10 @@ async def get_v1_sensor_telemetry(sensor_id: str, db: AsyncSession = Depends(get
 
 
 @router.get("/api/v1/alerts")
-async def get_v1_alerts(db: AsyncSession = Depends(get_db_session)):
+async def get_v1_alerts(
+    status: Optional[Literal["active", "acknowledged", "resolved"]] = Query(None),
+    db: AsyncSession = Depends(get_db_session)
+):
     stmt = select(Alert).order_by(desc(Alert.timestamp))
     res = await db.execute(stmt)
     alerts = res.scalars().all()
@@ -478,9 +504,73 @@ async def get_v1_alerts(db: AsyncSession = Depends(get_db_session)):
     return out
 
 
+@router.post("/api/v1/telemetry/ingest")
+async def post_v1_telemetry_ingest(
+    payload: TelemetryIngestPayload,
+    db: AsyncSession = Depends(get_db_session),
+    background_tasks: BackgroundTasks = None
+):
+    stmt_dev = select(Device).where(Device.device_id == payload.sensor_id)
+    res_dev = await db.execute(stmt_dev)
+    if not res_dev.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Sensor not registered")
+
+    mapped_payload = SensorReadingPayload(
+        temp=payload.temperature_c,
+        turbidity=payload.turbidity_ntu,
+        waterLevel=payload.water_level_cm,
+        rain=0.0,
+        pitch=payload.tilt_deg,
+        roll=0.0,
+        ax=0.0,
+        ay=0.0,
+        az=1.0,
+        ph=payload.ph,
+        tds=0.0,
+        pressure=1013.25,
+        lat=payload.latitude,
+        lon=payload.longitude,
+        timestamp=payload.timestamp.isoformat() if payload.timestamp else None,
+        device_id=payload.sensor_id,
+        water_flow=payload.water_flow
+    )
+    return await post_sensor_data(mapped_payload, db, background_tasks)
+
+
 @router.post("/api/v1/telemetry/manual")
-async def post_v1_telemetry_manual(payload: SensorReadingPayload, db: AsyncSession = Depends(get_db_session)):
-    return await post_sensor_data(payload, db)
+async def post_v1_telemetry_manual(
+    payload: TelemetryIngestPayload,
+    db: AsyncSession = Depends(get_db_session),
+    background_tasks: BackgroundTasks = None
+):
+    stmt_dev = select(Device).where(Device.device_id == payload.sensor_id)
+    res_dev = await db.execute(stmt_dev)
+    if not res_dev.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Sensor not registered")
+
+    if payload.source == "iot":
+        raise HTTPException(status_code=422, detail="Manual endpoint cannot accept 'iot' source")
+
+    mapped_payload = SensorReadingPayload(
+        temp=payload.temperature_c,
+        turbidity=payload.turbidity_ntu,
+        waterLevel=payload.water_level_cm,
+        rain=0.0,
+        pitch=payload.tilt_deg,
+        roll=0.0,
+        ax=0.0,
+        ay=0.0,
+        az=1.0,
+        ph=payload.ph,
+        tds=0.0,
+        pressure=1013.25,
+        lat=payload.latitude,
+        lon=payload.longitude,
+        timestamp=payload.timestamp.isoformat() if payload.timestamp else None,
+        device_id=payload.sensor_id,
+        water_flow=payload.water_flow
+    )
+    return await post_sensor_data(mapped_payload, db, background_tasks)
 
 
 @router.post("/api/v1/calibration")
@@ -514,5 +604,81 @@ async def post_v1_calibration(payload: dict, db: AsyncSession = Depends(get_db_s
             "water_level_offset_cm": 0.0,
             "operator": "Command Center"
         }
+    }
+
+
+# --- GIS GeoJSON Endpoints ---
+
+@router.get("/api/v1/gis/sensors")
+async def get_v1_gis_sensors(db: AsyncSession = Depends(get_db_session)):
+    stmt = select(Device)
+    res = await db.execute(stmt)
+    devices = res.scalars().all()
+    features = []
+    for d in devices:
+        stmt_last = select(SensorData).where(SensorData.device_id == d.device_id).order_by(desc(SensorData.timestamp)).limit(1)
+        res_last = await db.execute(stmt_last)
+        last = res_last.scalar_one_or_none()
+        lat = last.lat if last else 13.0827
+        lon = last.lon if last else 80.2707
+        features.append({
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [lon, lat]
+            },
+            "properties": {
+                "sensor_id": d.device_id,
+                "name": d.name
+            }
+        })
+    return {
+        "type": "FeatureCollection",
+        "features": features
+    }
+
+
+@router.get("/api/v1/gis/sensors/{sensor_id}")
+async def get_v1_gis_sensor(sensor_id: str, db: AsyncSession = Depends(get_db_session)):
+    stmt = select(Device).where(Device.device_id == sensor_id)
+    res = await db.execute(stmt)
+    d = res.scalar_one_or_none()
+    if not d:
+        raise HTTPException(status_code=404, detail="Sensor not found")
+    stmt_last = select(SensorData).where(SensorData.device_id == sensor_id).order_by(desc(SensorData.timestamp)).limit(1)
+    res_last = await db.execute(stmt_last)
+    last = res_last.scalar_one_or_none()
+    lat = last.lat if last else 13.0827
+    lon = last.lon if last else 80.2707
+    return {
+        "type": "Feature",
+        "geometry": {
+            "type": "Point",
+            "coordinates": [lon, lat]
+        },
+        "properties": {
+            "sensor_id": d.device_id,
+            "name": d.name
+        }
+    }
+
+
+@router.get("/api/v1/gis/sites")
+async def get_v1_gis_sites():
+    return {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [80.2321, 12.9812]
+                },
+                "properties": {
+                    "site_id": "site_adyar",
+                    "name": "Adyar River Basin"
+                }
+            }
+        ]
     }
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Tooltip, Polygon, Circle, useMap, GeoJSON, ImageOverlay } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Tooltip, Polygon, Circle, useMap, GeoJSON, ImageOverlay, WMSTileLayer } from 'react-leaflet';
 import L from 'leaflet';
 import { Sensor, Telemetry } from '../../../types';
 import { SITE_POLYGONS } from '../../../utils/mockData';
@@ -43,9 +43,20 @@ interface MapViewUpdaterProps {
 
 const MapViewUpdater: React.FC<MapViewUpdaterProps> = ({ center, zoom }) => {
   const map = useMap();
+  const prevCenterRef = useRef<[number, number]>(center);
+  const prevZoomRef = useRef<number>(zoom);
+
   useEffect(() => {
-    map.setView(center, zoom, { animate: true, duration: 0.8 });
+    const centerChanged = prevCenterRef.current[0] !== center[0] || prevCenterRef.current[1] !== center[1];
+    const zoomChanged = prevZoomRef.current !== zoom;
+
+    if (centerChanged || zoomChanged) {
+      map.setView(center, zoom, { animate: true, duration: 0.8 });
+      prevCenterRef.current = center;
+      prevZoomRef.current = zoom;
+    }
   }, [center, zoom, map]);
+
   return null;
 };
 
@@ -129,11 +140,8 @@ export const MapProvider: React.FC<MapProviderProps> = ({
       setGpsStatus('success');
       setGpsError(null);
 
-      // Auto-center map once on first successful coordinates fetch
-      if (!hasCenteredRef.current && mapInstance) {
-        hasCenteredRef.current = true;
-        mapInstance.setView(newCoords, 13);
-      }
+      // Startup auto-centering disabled to prevent map from flying away from Tamil Nadu rivers on load.
+      hasCenteredRef.current = true;
     };
 
     const error = (err: GeolocationPositionError) => {
@@ -291,13 +299,24 @@ export const MapProvider: React.FC<MapProviderProps> = ({
             onEachFeature={(feature, layer) => {
               const props = feature.properties || {};
               layer.bindTooltip(`
-                <div class="font-mono text-[10px] text-zinc-300 bg-zinc-950 p-2 border border-zinc-800 rounded shadow-md">
-                  <p class="font-bold text-white uppercase">${props.river_name || 'River Surface'}</p>
-                  <p>Surface Area: <b>${props.river_surface_area_km2 || 'N/A'} km²</b></p>
-                  <p>Perimeter: <b>${props.river_surface_perimeter_km || 'N/A'} km</b></p>
-                  <p class="text-[8px] text-zinc-500 mt-1 uppercase">Source: OSM Water Surface</p>
+                <div class="font-mono text-[9px] text-zinc-300 bg-zinc-950 px-2 py-1 border border-zinc-800 rounded shadow-md">
+                  <span class="font-bold text-white uppercase">${props.river_name || 'River Surface'}</span> (Surface)
                 </div>
               `, { sticky: true });
+
+              layer.bindPopup(`
+                <div class="p-3 bg-zinc-950 text-zinc-100 rounded-md select-text font-mono text-[10px] border border-zinc-800 shadow-2xl min-w-[260px]">
+                  <div class="flex items-center justify-between border-b border-zinc-800 pb-2 mb-2">
+                    <span class="text-xs font-bold text-purple-400 uppercase tracking-wider">${props.river_name || 'River Surface'}</span>
+                    <span class="bg-purple-500/10 text-purple-400 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase">ID: ${props.river_id || 'N/A'}</span>
+                  </div>
+                  <div class="flex flex-col gap-1.5 leading-relaxed">
+                    <p class="flex justify-between"><span>Surface Area:</span> <span class="text-white font-bold">${props.river_surface_area_km2 || 'N/A'} km²</span></p>
+                    <p class="flex justify-between"><span>Perimeter:</span> <span class="text-white font-bold">${props.river_surface_perimeter_km || 'N/A'} km</span></p>
+                    <p class="text-[8px] text-zinc-500 mt-1.5 pt-1.5 border-t border-zinc-900 uppercase text-right">Source: OSM Water Surface</p>
+                  </div>
+                </div>
+              `);
             }}
           />
         )}
@@ -313,14 +332,40 @@ export const MapProvider: React.FC<MapProviderProps> = ({
             onEachFeature={(feature, layer) => {
               const props = feature.properties || {};
               layer.bindTooltip(`
-                <div class="font-mono text-[10px] text-zinc-300 bg-zinc-950 p-2 border border-zinc-800 rounded shadow-md max-w-[240px]">
-                  <p class="font-bold text-white uppercase">${props.river_name || 'River Centerline'}</p>
-                  <p>Length/Perim: <b>${props.line_perimeter_km || props.length_km || 'N/A'} km</b></p>
-                  <p>Basin Area: <b>${props.basin_area_km2 || 'N/A'} km²</b></p>
-                  <p class="text-[8px] text-zinc-400 mt-1 leading-relaxed">Districts: ${props.districts_intersected || 'None'}</p>
-                  <p class="text-[8px] text-zinc-500 mt-1 uppercase">Source: HydroRIVERS & OSM</p>
+                <div class="font-mono text-[9px] text-zinc-300 bg-zinc-950 px-2 py-1 border border-zinc-800 rounded shadow-md">
+                  <span class="font-bold text-white uppercase">${props.river_name || 'River'}</span>
                 </div>
               `, { sticky: true });
+
+              layer.bindPopup(`
+                <div class="p-3 bg-zinc-950 text-zinc-100 rounded-md select-text font-mono text-[10px] border border-zinc-800 shadow-2xl min-w-[270px]">
+                  <div class="flex items-center justify-between border-b border-zinc-800 pb-2 mb-2">
+                    <span class="text-xs font-bold text-sky-400 uppercase tracking-wider">${props.river_name || 'River Details'}</span>
+                    <span class="bg-sky-500/10 text-sky-400 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase">ID: ${props.river_id || 'N/A'}</span>
+                  </div>
+                  <div class="flex flex-col gap-1.5 leading-relaxed">
+                    <p class="text-[8px] text-zinc-400 italic mb-1">${props.alternate_names ? `Alt: ${props.alternate_names}` : ''}</p>
+                    <p class="flex justify-between"><span>Length:</span> <span class="text-white font-bold">${props.length_km || props.line_perimeter_km || 'N/A'} km</span></p>
+                    <p class="flex justify-between"><span>Basin Area:</span> <span class="text-white font-bold">${props.basin_area_km2 || 'N/A'} km²</span></p>
+                    
+                    <div class="border-t border-zinc-900 my-1 pt-1.5 flex flex-col gap-1">
+                      <p class="text-[8px] text-sky-400 font-bold uppercase tracking-wider">Elevation profile (DEM)</p>
+                      <p class="flex justify-between"><span>Source Elevation:</span> <span class="text-emerald-400 font-bold">${props.source_elevation_m !== undefined ? props.source_elevation_m : 'N/A'} m</span></p>
+                      <p class="flex justify-between"><span>Mouth Elevation:</span> <span class="text-emerald-400 font-bold">${props.mouth_elevation_m !== undefined ? props.mouth_elevation_m : 'N/A'} m</span></p>
+                      <p class="flex justify-between"><span>Elevation Drop:</span> <span class="text-amber-400 font-bold">${props.elevation_drop_m !== undefined ? props.elevation_drop_m : 'N/A'} m</span></p>
+                    </div>
+                    
+                    <p class="text-[8px] text-zinc-400 mt-1 border-t border-zinc-900 pt-1.5 leading-relaxed">
+                      <span class="font-bold text-zinc-300">Districts:</span> ${props.districts_intersected || 'None'}
+                    </p>
+                    
+                    <div class="text-[7px] text-zinc-500 mt-1.5 pt-1.5 border-t border-zinc-900 flex justify-between">
+                      <span>Source: ${props.source_dataset || 'HydroRIVERS'}</span>
+                      <span>License: ${props.source_license || 'CC BY 4.0'}</span>
+                    </div>
+                  </div>
+                </div>
+              `);
             }}
           />
         )}
@@ -345,6 +390,48 @@ export const MapProvider: React.FC<MapProviderProps> = ({
             </Tooltip>
           </Polygon>
         ))}
+
+        {/* ISRO Bhuvan Hydrology & Waterbodies WMS Base Overlay */}
+        {heatmapLayer && (
+          <>
+            <WMSTileLayer
+              url="https://bhuvan-vec2.nrsc.gov.in/bhuvan/wms"
+              layers="lulc:LULC50K_1516"
+              format="image/png"
+              transparent={true}
+              version="1.1.1"
+              opacity={0.4}
+              attribution="Map data &copy; Bhuvan: ISRO/NRSC (Hydrological LULC Overlay)"
+            />
+            <WMSTileLayer
+              url="https://bhuvan-vec2.nrsc.gov.in/bhuvan/wms"
+              layers="lulc:BR_LULC50K_1112"
+              format="image/png"
+              transparent={true}
+              version="1.1.1"
+              opacity={0.3}
+              attribution="Map data &copy; Bhuvan: ISRO/NRSC (Water Bodies Layer)"
+            />
+            <WMSTileLayer
+              url="https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi"
+              layers="VIIRS_SNPP_Chlorophyll_A"
+              format="image/png"
+              transparent={true}
+              version="1.1.1"
+              opacity={0.5}
+              attribution="NASA GIBS / Suomi-NPP (Chlorophyll-A Plumes)"
+            />
+            <WMSTileLayer
+              url="https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi"
+              layers="MODIS_Terra_CorrectedReflectance_TrueColor"
+              format="image/jpeg"
+              transparent={true}
+              version="1.1.1"
+              opacity={0.3}
+              attribution="NASA GIBS / Terra MODIS (Corrected Reflectance True Color)"
+            />
+          </>
+        )}
 
         {/* Contamination Plumes (Heatmap) */}
         {heatmapLayer && sensors.map((sensor) => {

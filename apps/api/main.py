@@ -141,6 +141,16 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
 # Routers
 # ---------------------------------------------------------------------------
 
+@app.get("/health")
+async def health():
+    import datetime
+    return {
+        "status": "ok",
+        "version": settings.app_version,
+        "timestamp": datetime.datetime.now().isoformat()
+    }
+
+
 app.include_router(aquasentinel_router.router)
 
 

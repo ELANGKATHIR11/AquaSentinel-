@@ -51,6 +51,11 @@ class Settings(BaseSettings):
     # --- ML ---
     model_registry_dir: str = "apps/api/models/registry"
 
+    # --- ThingSpeak ---
+    thingspeak_enabled: bool = True
+    thingspeak_channel_id: str = ""
+    thingspeak_write_api_key: str = "I0FV9GHNVEEZ6YI8"
+
     # --- Logging ---
     log_level: str = "INFO"
     log_format: Literal["json", "text"] = "json"
