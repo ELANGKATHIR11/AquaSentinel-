@@ -59,9 +59,14 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     mqtt = get_mqtt_client()
     await mqtt.start()
 
+    # Start ThingSpeak live sync background task
+    from apps.api.thingspeak_sync import start_thingspeak_sync, stop_thingspeak_sync
+    start_thingspeak_sync()
+
     yield
 
     log.info("aquasentinel.shutdown")
+    stop_thingspeak_sync()
     await mqtt.stop()
     await close_engine()
 

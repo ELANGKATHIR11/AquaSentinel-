@@ -21,6 +21,7 @@ import { SimulationPage } from './features/simulation/SimulationPage';
 import { ReportsPage } from './features/reports/ReportsPage';
 import { SettingsPage } from './features/settings/SettingsPage';
 import { IotGatewayPage } from './features/iot-gateway/IotGatewayPage';
+import { ThingSpeakPage } from './features/thingspeak/ThingSpeakPage';
 
 // Icon imports
 import {
@@ -40,6 +41,7 @@ import {
   Radio,
   Sun,
   Moon,
+  Cloud,
 } from 'lucide-react';
 
 const SidebarLink: React.FC<{
@@ -190,6 +192,7 @@ const NavigationLayout: React.FC<{ children: React.ReactNode }> = ({ children })
             <SidebarLink to="/calibration" icon={Sliders} label="Calibration" />
             <SidebarLink to="/simulation" icon={Activity} label="Simulation" />
             <SidebarLink to="/reports" icon={FileText} label="Reports" />
+            <SidebarLink to="/thingspeak" icon={Cloud} label="ThingSpeak Live" />
             <SidebarLink to="/settings" icon={Settings} label="System Config" />
           </div>
 
@@ -248,6 +251,7 @@ export default function App() {
           <Route path="/simulation" element={<SimulationPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/thingspeak" element={<ThingSpeakPage />} />
           <Route path="*" element={<Navigate to="/overview" replace />} />
         </Routes>
       </NavigationLayout>
