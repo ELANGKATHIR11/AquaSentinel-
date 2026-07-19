@@ -226,13 +226,45 @@ const NavigationLayout: React.FC<{ children: React.ReactNode }> = ({ children })
 };
 
 export default function App() {
+  const { mockMode } = useDashboardStore();
+
   // Establish connection to live REST/WebSocket upon boot
   useEffect(() => {
     api.connectWebSocket();
+
+    if (!mockMode) {
+      const loadInitialDbData = async () => {
+        try {
+          const fetchedSensors = await api.getSensors();
+          // Load telemetry history from DB for each sensor
+          const historyMap: Record<string, any[]> = {};
+          for (const s of fetchedSensors) {
+            try {
+              const hist = await api.getTelemetry(s.sensor_id);
+              historyMap[s.sensor_id] = hist;
+            } catch (err) {
+              historyMap[s.sensor_id] = [];
+            }
+          }
+          // Fetch alerts too
+          const fetchedAlerts = await api.getAlerts();
+          
+          useDashboardStore.setState({
+            sensors: fetchedSensors,
+            telemetryHistory: historyMap,
+            alerts: fetchedAlerts
+          });
+        } catch (error) {
+          console.error("Error loading startup DB records:", error);
+        }
+      };
+      loadInitialDbData();
+    }
+
     return () => {
       api.disconnectWebSocket();
     };
-  }, []);
+  }, [mockMode]);
 
   return (
     <BrowserRouter>
